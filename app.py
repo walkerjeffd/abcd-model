@@ -1,4 +1,6 @@
 from flask import Flask, render_template, url_for
+from flask.ext.frozen import Freezer
+import sys
 
 # flask config
 DEBUG = True
@@ -6,6 +8,9 @@ DEBUG = True
 # create app
 app = Flask(__name__)
 app.config.from_object(__name__)
+
+# create freezer
+freezer = Freezer(app)
 
 # add views
 @app.route('/')
@@ -29,4 +34,7 @@ def montecarlo():
     return render_template('montecarlo.html')
 
 if __name__ == '__main__':
-    app.run()
+    if len(sys.argv) > 1 and sys.argv[1] == 'build':
+        freezer.freeze()
+    else:
+        app.run()

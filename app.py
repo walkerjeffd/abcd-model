@@ -1,7 +1,13 @@
 from flask import Flask, render_template, url_for
 
-app = Flask(__name__)
+# flask config
+DEBUG = True
 
+# create app
+app = Flask(__name__)
+app.config.from_object(__name__)
+
+# add views
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -23,4 +29,4 @@ def montecarlo():
     return render_template('montecarlo.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()

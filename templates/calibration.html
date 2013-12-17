@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% set active_page = "calibration" %}
+
+{% block title %}Calibration{% endblock %}
+
+{% block style %}
+  {{ super() }}
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    opacity: 0.25;
+  }
+
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+
+  svg {
+    font-size: 10px;
+  }
+
+  .overlay {
+    fill: none;
+    pointer-events: all;
+  }
+{% endblock %}
+
+{% block content %}
+  <h1>Model Calibration</h1>
+  <hr>
+  <div class="row">
+    <div class="span3">
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#parameters" data-toggle="tab">Parameters</a></li>
+        <li><a href="#initial" data-toggle="tab">Initial</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane active" id="parameters">
+          <dl>
+            <dt>a: <span id="param-a"></span></dt>
+            <dd><input class="slider" type="range" min="0.98" max="1" step="0.001" value="0.998" name="a" /></dd>
+
+            <dt>b: <span id="param-b"></span></dt>
+            <dd><input class="slider" type="range" min="1" max="10" step="0.1" value="6.35" name="b" /></dd>
+
+            <dt>c: <span id="param-c"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="1" step="0.01" value="0.38" name="c" /></dd>
+
+            <dt>d: <span id="param-d"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="0.2" step="0.001" value="0.0302" name="d"/></dd>
+          </dl>
+        </div>
+        <div class="tab-pane" id="initial">
+          <dl>
+            <dt>Snow Depth: <span id="param-A0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="1" name="A0"/></dd>
+
+            <dt>Soil Moisture: <span id="param-S0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="S0"/></dd>
+
+            <dt>Groundwater: <span id="param-G0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="G0"/></dd>
+          </dl>
+        </div>
+      </div>
+      <hr>
+      <div id="chart-structure"></div>
+    </div>
+    <div class="span6">
+      <div id="chart-line"></div>
+      <div>
+        <div id="chart-scatter" class="pull-left"></div>
+        <div id="chart-cdf" class="pull-left"></div>
+      </div>
+    </div>
+    <div class="span3">
+      <div id="stats">
+        <h4>Goodness-of-fit Statistics</h4>
+        <ul class="unstyled">
+          <li><strong><abbr title="Root Mean Square Error">RMSE</abbr></strong>: <span id="stat-rmse"></span></li>
+          <li><strong><abbr title="Nash-Sutcliffe Efficiency">NSE</abbr></strong>: <span id="stat-nse"></span></li>
+        </ul>
+        <small>Note: All statistics computed from log-transformed variables</small>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/d3.v3.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/underscore.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/psMathStats.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+  <script>
+  var App = {
+    params: {
+      'a': 0.998431008020005,
+      'c': 0.38,
+      'b': 6.35089223836597,
+      'e': 0.0799627811160295,
+      'd': 0.0302224997131877,
+      'Tb': -0.07124,
+      'A0': 1.0,
+      'S0': 2.0,
+      'G0': 2.0,
+      'PET': 1.0
+    },
+
+    eqns: {
+      Y: function(W) {
+        return (W+App.params.b)/(2*App.params.a) - Math.sqrt(Math.pow((W+App.params.b)/(2*App.params.a),2) - (W*App.params.b/App.params.a));  
+      },
+      S: function(W) {
+        return App.eqns.Y(W)*Math.exp(-App.params.PET/App.params.b);
+      },
+      ET: function(W) {
+        return App.eqns.Y(W) - App.eqns.S(W);
+      },
+      Qrecharge: function(W) {
+        return App.params.c*(W - App.eqns.Y(W));
+      },
+      Qrunoff: function(W) {
+        return (1-App.params.c)*(W - App.eqns.Y(W));
+      }
+    },
+
+    formats: {
+      dateFormat: d3.time.format("%Y-%m-%d"),
+      numberFormat: d3.format("4.4f")
+    },
+
+    init: function() {
+      var that = this;
+      
+      this.colors = d3.scale.ordinal()
+        .range(["#d62728", "#444444"])
+        .domain(['Q', 'Flow_in']);
+
+      this.colorStructure = d3.scale.ordinal()
+        .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"])
+        .domain(['Q', 'S', 'ET', 'GR', 'DR', 'G', 'dG', 'P']);
+
+      this.chartStructure = d3.custom.ComponentChart()
+        .width(270)
+        .height(200)
+        .funcs([
+          {label: 'Soil', name: 'S', func: this.eqns.S},
+          {label: 'ET', name: 'ET', func: this.eqns.ET},
+          {label: 'Runoff', name: 'DR', func: this.eqns.Qrunoff},
+          {label: 'Recharge', name: 'GR', func: this.eqns.Qrecharge}
+        ])
+        .colors(this.colorStructure)
+        .xLabel('Available Water[t] = Precip[t] + Soil[t-1]')
+        .xDomain([0, 10])
+        .yDomain([0, 10])
+        .yLabel('Soil Moisture Component');
+
+      this.chartLine = d3.custom.TimeseriesLineChart()
+        .x(function(d) { return d.Date; })
+        .width(570)
+        .height(200)
+        .yVariables(['Flow_in', 'Q'])
+        .yDomain([0.001, 2])
+        .yScale(d3.scale.log())
+        .color(this.colors)
+        .yLabel('Observed and Simulated (Red) Streamflow (in/day)');
+
+      this.chartScatter = d3.custom.ScatterChart()
+        .x(function(d) { return d.Flow_in; })
+        .y(function(d) { return d.Q; })
+        .width(285)
+        .height(305)
+        .r(2)
+        .opacity(0.5)
+        .yDomain([0.001, 2])
+        .xDomain([0.001, 2])
+        .xScale(d3.scale.log())
+        .yScale(d3.scale.log())
+        .one2one(true)
+        .yLabel('Simulated Streamflow (in/d)')
+        .xLabel('Observed Streamflow (in/d)');
+
+      this.chartCDF = d3.custom.CDFChart()
+        .width(285)
+        .height(305)
+        .yScale(d3.scale.log())
+        .yDomain([0.001, 2])
+        .yVariables(['Flow_in', 'Q'])
+        .color(this.colors)
+        .yLabel('CDF of Obs. and Sim. (Red) Streamflow')
+        .xLabel('Cumulative Frequency');
+
+      $(".slider").each(function() {
+        this.value = +that.params[this.name];
+        $("#param-"+this.name).text(this.value);
+      });
+
+      $(".slider").change(function() {
+        $("#param-"+this.name).text(this.value);
+        that.params[this.name] = +this.value;
+        
+        that.render();
+      });
+
+      d3.json("{{ url_for('static', filename='media/aberjona.json') }}", function(error, data) {
+        that.inp = data;
+
+        that.inp.forEach(function(d) {
+          d.Date = that.formats.dateFormat.parse(d.Date);
+          d.Tavg_C = (d.Tmin_C + d.Tmax_C)/2;
+        })
+
+        that.render();
+      });
+    },
+
+    solve: function(params, inp) {
+      var a = params['a'];
+      var b = params['b'];
+      var c = params['c'];
+      var d = params['d'];
+      var e = params['e'];
+      var Tb = params['Tb'];
+
+      var At, mt, Pe, W, Y, S, GR, DR, G, dG, ET, Q;
+
+      var out = inp.map(function(v, i) {
+
+        if (i === 0) { // assign initial conditions
+          At = params['A0'];
+          S = params['S0'];
+          G = params['G0'];
+        } else {
+          At = Math.max((v.Tavg_C > Tb ? At - mt : At - mt + v.Precip_in), 0);
+        }
+
+        mt = v.Tavg_C > Tb ? Math.min(At, e*(v.Tavg_C - Tb)) : 0;
+        Pe = v.Tavg_C < Tb ? 0 : v.Precip_in + mt;
+
+        W = S + Pe;
+        Y = (W + b)/(2 * a) - Math.sqrt(Math.pow((W + b)/(2 * a),2) - (W * b / a));
+        S = Y * Math.exp(-v.PET_in / b);
+        GR = c * (W - Y);
+        DR = Math.max((1 - c) * (W - Y), 0.001);
+
+        G = (GR + G)/(1 + d);
+        dG = d * G;
+        ET = Y - S;
+        Q = Math.max(DR + dG, 0.001);
+
+        return {
+            Date: v.Date,
+            Tavg_C: v.Tavg_C,
+            Precip_in: v.Precip_in,
+            PET_in: v.PET_in,
+            Flow_in: v.Flow_in,
+            W: W,
+            S: S,
+            G: G,
+            Y: Y,
+            GR: GR,
+            DR: DR,
+            dG: dG,
+            ET: ET,
+            At: At,
+            mt: mt,
+            Pe: Pe,
+            Q: Q
+          };
+      })
+
+      return out;
+    },
+
+    compute_stats: function(data, obs, sim) {
+      function log10(x) {
+        return Math.log(x)*Math.LOG10E;
+      }
+
+      var log_resid2 = data.map(function(d) {
+        return Math.pow(log10(d[obs]) - log10(d[sim]), 2);
+      });
+
+      var log_obs = _.pluck(data, obs).map(function(d) {
+        return log10(d);
+      });
+
+      var mse = log_resid2.mean();
+
+      return {
+        rmse: Math.sqrt(mse),
+        nse: 1 - mse / log_obs.variance()
+      }
+    },
+
+    render: function() {
+      var data = this.solve(this.params, this.inp),
+          stats = this.compute_stats(data, 'Flow_in', 'Q');
+
+      d3.select("#chart-structure").call(this.chartStructure);
+      d3.select("#chart-line").call(this.chartLine.data(data));
+      d3.select("#chart-scatter").call(this.chartScatter.data(data));
+      d3.select("#chart-cdf").call(this.chartCDF.data(data));
+
+      d3.select("#stat-rmse").text(this.formats.numberFormat(stats.rmse));
+      d3.select("#stat-nse").text(this.formats.numberFormat(stats.nse));
+    }
+  }
+  
+  $(function() {
+    App.init();
+  });
+  </script>
+{% endblock %}

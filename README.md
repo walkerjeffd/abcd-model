@@ -2,12 +2,13 @@ phd-abcd
 ========
 
 Web-based Interactive Water Balance Model
+
 Jeffrey D. Walker
 
 Installation
 ------------
 
-Set up a new virtual environment using [virtualenv](https://pypi.python.org/pypi/virtualenv).
+Set up a new virtual environment using [virtualenv](https://pypi.python.org/pypi/virtualenv), and then activate it.
 
 Install dependencies.
 

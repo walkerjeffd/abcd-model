@@ -21,6 +21,10 @@ def index():
 def theory():
     return render_template('theory.html')
 
+@app.route('/datasets.html')
+def datasets():
+    return render_template('datasets.html')
+
 @app.route('/simulation.html')
 def simulation():
     return render_template('simulation.html')

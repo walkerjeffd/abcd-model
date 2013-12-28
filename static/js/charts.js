@@ -203,7 +203,7 @@ d3.custom.TimeseriesLineChart = function() {
       xScale = d3.time.scale(),
       yScale = d3.scale.linear(),
       xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
-      yAxis = d3.svg.axis(),
+      yAxis = d3.svg.axis().ticks(5, "g").orient("left"),
       xValue = function(d) { return d[0]; },
       yValue = function(d) { return d[1]; },
       color,
@@ -215,7 +215,7 @@ d3.custom.TimeseriesLineChart = function() {
 
   function chart(selection) {
     selection.each(function() {
-      yAxis.scale(yScale).ticks(5, "g").orient("left");
+      yAxis.scale(yScale);
 
       if (typeof yVariables === 'string') {
         yVariables = [yVariables];

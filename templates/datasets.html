@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% set active_page = "datasets" %}
+
+{% block title %}Datasets{% endblock %}
+
+{% block style %}
+  {{ super() }}
+
+  #holder { 
+    border: 10px dashed #ccc; 
+    width: 200px; 
+    height: 50px; 
+    vertical-align: middle;
+    margin-top: auto;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  #holder.hover { 
+    border: 10px 
+    dashed #333; 
+  }
+
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+    opacity: 0.25;
+  }
+
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 1.5px;
+  }
+
+  svg {
+    font-size: 10px;
+  }
+
+{% endblock %}
+
+{% block content %}
+  <h1>Load Input and Observed Datasets</h1>
+  
+  <div class="row">
+    <div class="span3">
+      <strong>Drop Input File</strong>
+      <div id="holder"></div>
+      <div id="summary-input"></div>
+    </div>
+    <div class="span9">
+      <div id="chart-temp"></div>
+      <div id="chart-precip"></div>
+      <div id="chart-flow"></div>
+    </div>
+  </div>
+  
+{% endblock %}
+
+{% block scripts %}
+
+
+<script src="{{ url_for('static', filename='js/jstorage.js') }}"></script>
+<script src="{{ url_for('static', filename='js/d3.v3.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+
+<script>
+
+var dateFormat = d3.time.format('%Y-%m-%d');
+var datasets = {};
+
+$(function() {
+  init();
+});
+
+function init() {
+  initDragDrop('#holder');
+  initStorage();
+  showInputSummary();
+  plotInputDataset();
+}
+
+function initStorage() {
+  if (!$.jStorage.storageAvailable()) {
+    console.log('Error: local storage not available');
+  }
+
+  $.jStorage.listenKeyChange('input', function(key, action){
+    console.log('jStorage: ' + key + ' has been ' + action);
+    var data = loadInputDataset();
+    plotInputDataset(data);
+    showInputSummary();
+  });
+}
+
+function showInputSummary() {
+  var inputData = loadInputDataset();
+
+  if (inputData === null) {
+    $('#summary-input').text('No available input dataset');
+  } else {
+    var startDate = inputData[0]['Date'],
+      endDate = inputData[inputData.length-1]['Date'],
+      n = inputData.length,
+      variables = d3.keys(inputData[0]);
+
+    var str = '<ul>';
+
+    str = '<li>Start Date: ' + dateFormat(startDate) + '</li>';
+    str += '<li>End Date: ' + dateFormat(endDate) + '</li>';
+    str += '<li>No. Days: ' + n + '</li>';
+    str += '<li>Variables: ' + variables.join(', ') + '</li>';
+    str += '</ul>'
+    $('#summary-input').html(str);
+  }
+}
+
+function initDragDrop(el) {
+  if (typeof window.FileReader === 'undefined') {
+    alert('FileReader not supported!');
+  }
+
+  $(el).on('dragover', function () { $(this).addClass('hover'); return false; });
+  $(el).on('dragend', function () { $(this).removeClass('hover'); return false; });
+  $(el).on('drop', function (e) {
+
+    $(this).removeClass('hover')
+    e.preventDefault();
+
+    var file = e.originalEvent.dataTransfer.files[0],
+        reader = new FileReader();
+
+    var fileName = file.name,
+        fileNameParts = fileName.split('.'),
+        fileExtension = fileNameParts[fileNameParts.length-1].toLowerCase();
+
+    var parser;
+    if (fileExtension == "json") {
+      parser = loadJsonFromString
+    } else if (fileExtension == "csv") {
+      parser = loadCsvFromString
+    } else {
+      console.log("Error: Unable to infer format for filename " + fileName + " (must end in .csv or .json)");
+      return false;
+    }
+
+    reader.onload = function (event) {
+      var parsedData = parser(event.target.result);
+      var processedData = processInputData(parsedData);
+      if (processedData === null) {
+        console.log('Error: Processing data failed');
+      } else {
+        console.log('Processing data complete');
+        storeInputDataset(processedData);
+      }
+    };
+
+    reader.readAsText(file);
+
+    return false;
+  });
+}
+
+function plotInputDataset() {
+  var inputData = loadInputDataset();
+
+  var chartTemp = d3.custom.TimeseriesLineChart()
+    .x(function(d) { return d.Date; })
+    .width(550)
+    .height(200)
+    .yVariables(['Tmin_C', 'Tmax_C'])
+    .yLabel('Min/Max Air Temperature (degC)')
+    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+
+  var chartPrecip = d3.custom.TimeseriesLineChart()
+    .x(function(d) { return d.Date; })
+    .width(550)
+    .height(200)
+    .yVariables(['Precip_in'])
+    .yLabel('Precipitation (in/d)')
+    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+
+  var chartFlow = d3.custom.TimeseriesLineChart()
+    .x(function(d) { return d.Date; })
+    .width(550)
+    .height(200)
+    .yVariables(['Flow_cfs'])
+    .yLabel('Observed Flow (cfs)')
+    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+
+  d3.select('#chart-temp').call(chartTemp.data(inputData));
+  d3.select('#chart-precip').call(chartPrecip.data(inputData));
+  d3.select('#chart-flow').call(chartFlow.data(inputData));
+}
+
+function loadCsvFromString(stringData) {
+  var parsers = {
+    'Date': function(v) { return dateFormat.parse(v); }, 
+    'Precip_in': function(v) { return +v; }, 
+    'Tmin_C': function(v) { return +v; }, 
+    'Tmax_C': function(v) { return +v; },
+    'PET_in': function(v) { return +v; },
+    'Flow_cfs': function(v) { return +v; },
+    'Flow_in': function(v) { return +v; }
+  };
+
+  console.log('Loading file from CSV...');
+  
+  var parseData = d3.csv.parse(stringData);
+
+  parseData.forEach(function(row) {
+    d3.keys(parsers).forEach(function (key) {
+      if (key in row) {
+        row[key] = parsers[key](row[key]); 
+      }
+    });
+  });
+  
+  // show first few rows of parsed data
+  console.log(parseData.slice(0, 5));
+
+  return parseData;
+}
+
+function loadJsonFromString(stringData) {
+  var parsers = {
+    'Date': function(v) { return dateFormat.parse(v); }
+  };
+
+  console.log('Loading file from JSON...');
+  var parseData = JSON.parse(stringData);
+
+  parseData.forEach(function(row) {
+    d3.keys(parsers).forEach(function (key) {
+      if (key in row) {
+        row[key] = parsers[key](row[key]); 
+      }
+    });
+  });
+
+  // show first few rows of parsed data
+  console.log(parseData.slice(0, 5));
+
+  return parseData;
+}
+
+function storeInputDataset(inputData) {
+  console.log('Saving input dataset');
+  $.jStorage.set('input', inputData);
+}
+
+function loadInputDataset() {
+  console.log('Loading input dataset');
+  var dataset = $.jStorage.get('input');
+  if (dataset === null) {
+    console.log('Error: input dataset not found in local storage');
+    return null;
+  } else {
+    dataset.forEach(function(d) {
+      d.Date = new Date(d.Date);
+    });
+    return dataset;
+  }
+}
+
+function processInputData(inputData) {
+  sortedInputData = sortInputByDate(inputData);
+  var flagDates = checkInputDates(sortedInputData);
+  if (!flagDates) {
+    console.log('Dates of input data are either incomplete or incorrect');
+    return null;
+  }
+  return sortedInputData;
+}
+
+function sortInputByDate(inputData) {
+  function compare(a, b) {
+    if (a['Date'] < b['Date'])
+      return -1;
+    if (a['Date'] > b['Date'])
+      return 1;
+    return 0;
+  }
+
+  return inputData.sort(compare);
+}
+
+function checkInputDates(inputData) {
+  // Check input data
+  var startDate = inputData[0]['Date'],
+      endDate = inputData[inputData.length-1]['Date'],
+      expectedDates = d3.time.days(startDate, d3.time.day.offset(endDate, 1));
+
+  // console.log(startDate, endDate, inputData.length, expectedDates.length);
+
+  // check all dates were parsed
+  for (var i=0; i<inputData.length; i++) {
+    if (inputData[i]['Date'] === null) {
+      console.log('Error: parsing date at row ' + i + ' failed, format must be YYYY-mm-dd (e.g. 2000-05-15)');
+      return false;
+    }
+  }
+
+  // Check matching lengths
+  if (expectedDates.length !== inputData.length) {
+    console.log('Error: Length of input dataset does not match length of expected dates (' + inputData.length + ', ' + expectedDates.length + ')');
+    return false;
+  }
+
+  x = inputData[0]['Date'];
+  y = expectedDates[0];
+
+  for (var i=0; i<inputData.length; i++) {
+    if ((inputData[i]['Date'] - expectedDates[i]) !== 0) {
+      console.log('Error: unexpected date ' + dateFormat(inputData[i]['Date']) + ' at row ' + i + ', expected ' + dateFormat(expectedDates[i]));
+      return false;
+    }
+  }
+
+  return true;
+}
+
+</script>
+
+{% endblock %}

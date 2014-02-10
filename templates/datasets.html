@@ -16,6 +16,8 @@
     margin-bottom: 10px;
   }
 
+
+
   #holder.hover { 
     border: 10px 
     dashed #333; 
@@ -38,12 +40,24 @@
   svg {
     font-size: 10px;
   }
-
 {% endblock %}
 
 {% block content %}
-  <h1>Load Input and Observed Datasets</h1>
-  
+  <div class="row">
+    <div class="span12">
+      <strong>Watershed Information</strong>
+      <dd>
+        Name: <input type="text" id="input-name" placeholder="Aberjona River">
+      </dd>
+      <dd>
+        Drainage Area (sq. miles): <input type="text" id="input-area" placeholder="24.7">
+      </dd>
+      <dd>
+        Latitude (decimal degrees): <input type="text" id="input-lat" placeholder="42.447">
+      </dd>
+    </div>
+  </div>
+  <hr>
   <div class="row">
     <div class="span3">
       <strong>Drop Input File</strong>
@@ -56,11 +70,9 @@
       <div id="chart-flow"></div>
     </div>
   </div>
-  
 {% endblock %}
 
 {% block scripts %}
-
 
 <script src="{{ url_for('static', filename='js/jstorage.js') }}"></script>
 <script src="{{ url_for('static', filename='js/d3.v3.js') }}"></script>
@@ -147,8 +159,15 @@ function initDragDrop(el) {
     }
 
     reader.onload = function (event) {
+      var watershedParams = {};
+
+      watershedParams['name'] = $('#input-name').val();
+      watershedParams['area'] = $('#input-area').val();
+      watershedParams['lat'] = $('#input-lat').val();
+
       var parsedData = parser(event.target.result);
       var processedData = processInputData(parsedData);
+      
       if (processedData === null) {
         console.log('Error: Processing data failed');
       } else {
@@ -320,6 +339,33 @@ function checkInputDates(inputData) {
   }
 
   return true;
+}
+
+function computeSolar(latitude, jday) {
+  var r = 1 + 0.033*Math.cos(2*Math.PI*jday/365),
+      delta = 0.4093*Math.sin((2*Math.PI*jday/365) - 1.405),
+      latitudeDegrees = latitude/180*Math.PI,
+      omega = Math.acos(-Math.tan(latitudeDegrees)*Math.tan(delta)),
+      daylight = 24*omega/Math.PI,
+      S0_mm = 15.392*r*(Math.sin(latitudeDegrees)*omega*Math.sin(delta) + Math.cos(latitudeDegrees)*Math.cos(delta)*Math.sin(omega)),
+      S0_in = S0_mm*0.03937;
+  return S0_in;
+}
+
+function computePET(latitude, input) {
+  // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C
+
+  input.forEach(function(d) {
+    var Trng_C = d.Tmax_C - d.Tmin_C,
+        Tavg_C = (d.Tmax_C + d.Tmin_C)/2,
+        jday = d3.time.dayOfYear(d.Date),
+        S0 = computeSolar(latitude, jday),
+        PET_mm = Trng_C > 0 ? 0.023*S0*(Tavg_C+17.8)*Math.sqrt(Trng_C) : 0;
+    
+    d.PET_in = PET_mm*0.03937;
+  })
+
+  return input;
 }
 
 </script>

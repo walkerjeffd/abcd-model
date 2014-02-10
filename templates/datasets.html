@@ -55,6 +55,9 @@
       <dd>
         Latitude (decimal degrees): <input type="text" id="input-lat" placeholder="42.447">
       </dd>
+      <dd>
+        Longitude (decimal degrees): <input type="text" id="input-lon" placeholder="42.447">
+      </dd>
     </div>
   </div>
   <hr>
@@ -67,6 +70,7 @@
     <div class="span9">
       <div id="chart-temp"></div>
       <div id="chart-precip"></div>
+      <div id="chart-pet"></div>
       <div id="chart-flow"></div>
     </div>
   </div>
@@ -189,7 +193,7 @@ function plotInputDataset() {
     .x(function(d) { return d.Date; })
     .width(550)
     .height(200)
-    .yVariables(['Tmin_C', 'Tmax_C'])
+    .yVariables(['Tmin_degC', 'Tmax_degC'])
     .yLabel('Min/Max Air Temperature (degC)')
     .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
@@ -199,6 +203,14 @@ function plotInputDataset() {
     .height(200)
     .yVariables(['Precip_in'])
     .yLabel('Precipitation (in/d)')
+    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+
+  var chartPET = d3.custom.TimeseriesLineChart()
+    .x(function(d) { return d.Date; })
+    .width(550)
+    .height(200)
+    .yVariables(['PET_in'])
+    .yLabel('Potential Evapotranspiration (in/d)')
     .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
   var chartFlow = d3.custom.TimeseriesLineChart()
@@ -211,6 +223,7 @@ function plotInputDataset() {
 
   d3.select('#chart-temp').call(chartTemp.data(inputData));
   d3.select('#chart-precip').call(chartPrecip.data(inputData));
+  d3.select('#chart-pet').call(chartPET.data(inputData));
   d3.select('#chart-flow').call(chartFlow.data(inputData));
 }
 
@@ -218,8 +231,8 @@ function loadCsvFromString(stringData) {
   var parsers = {
     'Date': function(v) { return dateFormat.parse(v); }, 
     'Precip_in': function(v) { return +v; }, 
-    'Tmin_C': function(v) { return +v; }, 
-    'Tmax_C': function(v) { return +v; },
+    'Tmin_degC': function(v) { return +v; }, 
+    'Tmax_degC': function(v) { return +v; },
     'PET_in': function(v) { return +v; },
     'Flow_cfs': function(v) { return +v; },
     'Flow_in': function(v) { return +v; }
@@ -341,32 +354,32 @@ function checkInputDates(inputData) {
   return true;
 }
 
-function computeSolar(latitude, jday) {
-  var r = 1 + 0.033*Math.cos(2*Math.PI*jday/365),
-      delta = 0.4093*Math.sin((2*Math.PI*jday/365) - 1.405),
-      latitudeDegrees = latitude/180*Math.PI,
-      omega = Math.acos(-Math.tan(latitudeDegrees)*Math.tan(delta)),
-      daylight = 24*omega/Math.PI,
-      S0_mm = 15.392*r*(Math.sin(latitudeDegrees)*omega*Math.sin(delta) + Math.cos(latitudeDegrees)*Math.cos(delta)*Math.sin(omega)),
-      S0_in = S0_mm*0.03937;
-  return S0_in;
-}
+// function computeSolar(latitude, jday) {
+//   var r = 1 + 0.033*Math.cos(2*Math.PI*jday/365),
+//       delta = 0.4093*Math.sin((2*Math.PI*jday/365) - 1.405),
+//       latitudeDegrees = latitude/180*Math.PI,
+//       omega = Math.acos(-Math.tan(latitudeDegrees)*Math.tan(delta)),
+//       daylight = 24*omega/Math.PI,
+//       S0_mm = 15.392*r*(Math.sin(latitudeDegrees)*omega*Math.sin(delta) + Math.cos(latitudeDegrees)*Math.cos(delta)*Math.sin(omega)),
+//       S0_in = S0_mm*0.03937;
+//   return S0_in;
+// }
 
-function computePET(latitude, input) {
-  // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C
+// function computePET(latitude, input) {
+//   // Compute PET from watershed latitude and input data containing Date, Tmin_degC, Tmax_degC
 
-  input.forEach(function(d) {
-    var Trng_C = d.Tmax_C - d.Tmin_C,
-        Tavg_C = (d.Tmax_C + d.Tmin_C)/2,
-        jday = d3.time.dayOfYear(d.Date),
-        S0 = computeSolar(latitude, jday),
-        PET_mm = Trng_C > 0 ? 0.023*S0*(Tavg_C+17.8)*Math.sqrt(Trng_C) : 0;
+//   input.forEach(function(d) {
+//     var Trng_C = d.Tmax_degC - d.Tmin_degC,
+//         Tavg_C = (d.Tmax_degC + d.Tmin_degC)/2,
+//         jday = d3.time.dayOfYear(d.Date),
+//         S0 = computeSolar(latitude, jday),
+//         PET_mm = Trng_C > 0 ? 0.023*S0*(Tavg_C+17.8)*Math.sqrt(Trng_C) : 0;
     
-    d.PET_in = PET_mm*0.03937;
-  })
+//     d.PET_in = PET_mm*0.03937;
+//   })
 
-  return input;
-}
+//   return input;
+// }
 
 </script>
 

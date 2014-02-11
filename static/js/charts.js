@@ -408,7 +408,7 @@ d3.custom.ComponentChart = function() {
         return { name: f.name, label: f.label, values: d3.zip(xValues, f.values)};
       }))
 
-      console.log(yStack);
+      // console.log(yStack);
 
       if (!colors) {
         colors = d3.scale.category20().domain(funcs.map(function(f) { return f.name; }));

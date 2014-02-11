@@ -16,8 +16,6 @@
     margin-bottom: 10px;
   }
 
-
-
   #holder.hover { 
     border: 10px 
     dashed #333; 
@@ -49,15 +47,16 @@
       <dd>
         Name: <input type="text" id="input-name" placeholder="Aberjona River">
       </dd>
-      <dd>
-        Drainage Area (sq. miles): <input type="text" id="input-area" placeholder="24.7">
-      </dd>
-      <dd>
-        Latitude (decimal degrees): <input type="text" id="input-lat" placeholder="42.447">
-      </dd>
-      <dd>
-        Longitude (decimal degrees): <input type="text" id="input-lon" placeholder="42.447">
-      </dd>
+     <!--  <dd>
+       Drainage Area (sq. miles): <input type="text" id="input-area" placeholder="24.7">
+     </dd>
+     <dd>
+       Latitude (decimal degrees): <input type="text" id="input-lat" placeholder="42.447">
+     </dd>
+     <dd>
+       Longitude (decimal degrees): <input type="text" id="input-lon" placeholder="42.447">
+     </dd> -->
+    <a class="btn btn-primary" id="btn-save">Save</a>
     </div>
   </div>
   <hr>
@@ -88,52 +87,38 @@ var dateFormat = d3.time.format('%Y-%m-%d');
 var datasets = {};
 
 $(function() {
-  init();
+  initAll();
+  showAll();
 });
 
-function init() {
+function initAll() {
+  console.log('Initializing: application');
   initDragDrop('#holder');
   initStorage();
-  showInputSummary();
-  plotInputDataset();
+  initSave('#btn-save');
+}
+
+function showAll() {
+  showInput();
+  showShed();
+  plotInput();
 }
 
 function initStorage() {
+  console.log('Initializing: storage');
   if (!$.jStorage.storageAvailable()) {
     console.log('Error: local storage not available');
   }
 
   $.jStorage.listenKeyChange('input', function(key, action){
     console.log('jStorage: ' + key + ' has been ' + action);
-    var data = loadInputDataset();
-    plotInputDataset(data);
-    showInputSummary();
+    plotInput();
+    showInput();
   });
 }
 
-function showInputSummary() {
-  var inputData = loadInputDataset();
-
-  if (inputData === null) {
-    $('#summary-input').text('No available input dataset');
-  } else {
-    var startDate = inputData[0]['Date'],
-      endDate = inputData[inputData.length-1]['Date'],
-      n = inputData.length,
-      variables = d3.keys(inputData[0]);
-
-    var str = '<ul>';
-
-    str = '<li>Start Date: ' + dateFormat(startDate) + '</li>';
-    str += '<li>End Date: ' + dateFormat(endDate) + '</li>';
-    str += '<li>No. Days: ' + n + '</li>';
-    str += '<li>Variables: ' + variables.join(', ') + '</li>';
-    str += '</ul>'
-    $('#summary-input').html(str);
-  }
-}
-
 function initDragDrop(el) {
+  console.log('Initializing: drag and drop holder');
   if (typeof window.FileReader === 'undefined') {
     alert('FileReader not supported!');
   }
@@ -141,7 +126,7 @@ function initDragDrop(el) {
   $(el).on('dragover', function () { $(this).addClass('hover'); return false; });
   $(el).on('dragend', function () { $(this).removeClass('hover'); return false; });
   $(el).on('drop', function (e) {
-
+    console.log('Event: file dropped on holder');
     $(this).removeClass('hover')
     e.preventDefault();
 
@@ -163,20 +148,14 @@ function initDragDrop(el) {
     }
 
     reader.onload = function (event) {
-      var watershedParams = {};
-
-      watershedParams['name'] = $('#input-name').val();
-      watershedParams['area'] = $('#input-area').val();
-      watershedParams['lat'] = $('#input-lat').val();
-
       var parsedData = parser(event.target.result);
-      var processedData = processInputData(parsedData);
+      var processedData = processInput(parsedData);
       
       if (processedData === null) {
         console.log('Error: Processing data failed');
       } else {
         console.log('Processing data complete');
-        storeInputDataset(processedData);
+        saveInput(processedData);
       }
     };
 
@@ -186,9 +165,61 @@ function initDragDrop(el) {
   });
 }
 
-function plotInputDataset() {
-  var inputData = loadInputDataset();
+function initSave(el) {
+  $(el).on('click', function(e) {
+    console.log('Click: save');
+    e.preventDefault();
+    
+    var shedData = {};
 
+    shedData['name'] = $('#input-name').val();
+    // shedData['area'] = $('#input-area').val();
+    // shedData['lat'] = $('#input-lat').val();
+    // shedData['lon'] = $('#input-lon').val();
+
+    saveShed(shedData);
+  })
+}
+
+function showShed() {
+  var shedData = loadShed();
+
+  $('#input-name').val(shedData['name']);
+  // $('#input-area').val(shedData['area']);
+  // $('#input-lat').val(shedData['lat']);
+  // $('#input-lon').val(shedData['lon']);
+}
+
+function showInput() {
+  console.log('Show: input summary');
+  var inputData = loadInput();
+
+  if (!!inputData == false) {
+    $('#summary-input').text('No available input dataset');
+  } else {
+    var startDate = inputData[0]['Date'],
+      endDate = inputData[inputData.length-1]['Date'],
+      n = inputData.length,
+      variables = d3.keys(inputData[0]);
+
+    var str = '<ul>';
+
+    str = '<li>Start Date: ' + dateFormat(startDate) + '</li>';
+    str += '<li>End Date: ' + dateFormat(endDate) + '</li>';
+    str += '<li>No. Days: ' + n + '</li>';
+    str += '<li>Variables: ' + variables.join(', ') + '</li>';
+    str += '</ul>'
+    $('#summary-input').html(str);
+  }
+}
+
+function plotInput() {
+  console.log('Show: input plots');
+  var inputData = loadInput();
+
+  if (!!inputData == false) {
+    return false;
+  }
   var chartTemp = d3.custom.TimeseriesLineChart()
     .x(function(d) { return d.Date; })
     .width(550)
@@ -217,8 +248,8 @@ function plotInputDataset() {
     .x(function(d) { return d.Date; })
     .width(550)
     .height(200)
-    .yVariables(['Flow_cfs'])
-    .yLabel('Observed Flow (cfs)')
+    .yVariables(['Flow_in'])
+    .yLabel('Observed Flow (in/d)')
     .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
   d3.select('#chart-temp').call(chartTemp.data(inputData));
@@ -228,6 +259,7 @@ function plotInputDataset() {
 }
 
 function loadCsvFromString(stringData) {
+  console.log('Loading: from CSV');
   var parsers = {
     'Date': function(v) { return dateFormat.parse(v); }, 
     'Precip_in': function(v) { return +v; }, 
@@ -257,6 +289,7 @@ function loadCsvFromString(stringData) {
 }
 
 function loadJsonFromString(stringData) {
+  console.log('Loading: from JSON');
   var parsers = {
     'Date': function(v) { return dateFormat.parse(v); }
   };
@@ -278,16 +311,16 @@ function loadJsonFromString(stringData) {
   return parseData;
 }
 
-function storeInputDataset(inputData) {
-  console.log('Saving input dataset');
+function saveInput(inputData) {
+  console.log('Saving: input');
   $.jStorage.set('input', inputData);
 }
 
-function loadInputDataset() {
-  console.log('Loading input dataset');
+function loadInput() {
+  console.log('Loading: input');
   var dataset = $.jStorage.get('input');
   if (dataset === null) {
-    console.log('Error: input dataset not found in local storage');
+    console.log('Warning: input dataset not found in local storage');
     return null;
   } else {
     dataset.forEach(function(d) {
@@ -297,7 +330,24 @@ function loadInputDataset() {
   }
 }
 
-function processInputData(inputData) {
+function loadShed() {
+  console.log('Loading: shed');
+  var dataset = $.jStorage.get('shed');
+  if (dataset === null) {
+    console.log('Warning: shed dataset not found in local storage');
+    return null;
+  } else {
+    return dataset;
+  }
+}
+
+function saveShed(shedData) {
+  console.log('Saving: shed');
+  $.jStorage.set('shed', shedData);
+}
+
+function processInput(inputData) {
+  console.log('Processing: input');
   sortedInputData = sortInputByDate(inputData);
   var flagDates = checkInputDates(sortedInputData);
   if (!flagDates) {
@@ -308,6 +358,7 @@ function processInputData(inputData) {
 }
 
 function sortInputByDate(inputData) {
+  console.log('Sorting: input');
   function compare(a, b) {
     if (a['Date'] < b['Date'])
       return -1;
@@ -320,6 +371,7 @@ function sortInputByDate(inputData) {
 }
 
 function checkInputDates(inputData) {
+  console.log('Checking: input dates');
   // Check input data
   var startDate = inputData[0]['Date'],
       endDate = inputData[inputData.length-1]['Date'],

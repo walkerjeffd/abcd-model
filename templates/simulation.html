@@ -133,6 +133,7 @@
 
 {% block scripts %}
   {{ super() }}
+  <script src="{{ url_for('static', filename='js/jstorage.js') }}"></script>
   <script src="{{ url_for('static', filename='js/d3.v3.js') }}"></script>
   <script src="{{ url_for('static', filename='js/underscore.js') }}"></script>
   <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
@@ -254,16 +255,31 @@
         that.render();
       });
 
-      d3.json("{{ url_for('static', filename='media/aberjona.json') }}", function(error, data) {
-        that.inp = data;
+      this.loadData();
+    },
 
-        that.inp.forEach(function(d) {
-          d.Date = dateFormat.parse(d.Date);
+    loadData: function() {
+      console.log('Loading: input');
+      var dataset = $.jStorage.get('input');
+      if (dataset === null) {
+        console.log('Warning: input dataset not found in local storage');
+        return null;
+      } else {
+        dataset.forEach(function(d) {
+          d.Date = new Date(d.Date);
+        });
+        this.inp = dataset;
+      }
+
+      if (!!this.inp == false) {
+        console.log();('Error: could not load data')
+      } else {
+        this.inp.forEach(function(d) {
+          // d.Date = dateFormat.parse(d.Date);
           d.Tavg_C = (d.Tmin_C + d.Tmax_C)/2;
-        })
-
-        that.render();
-      });
+        });
+        this.render();
+      }
     },
 
     compute: function(params, inp) {

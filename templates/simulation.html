@@ -276,7 +276,7 @@
       } else {
         this.inp.forEach(function(d) {
           // d.Date = dateFormat.parse(d.Date);
-          d.Tavg_C = (d.Tmin_C + d.Tmax_C)/2;
+          d.Tavg_degC = (d.Tmin_degC + d.Tmax_degC)/2;
         });
         this.render();
       }
@@ -299,11 +299,11 @@
           S = params['S0'];
           G = params['G0'];
         } else {
-          At = Math.max((v.Tavg_C > Tb ? At - mt : At - mt + v.Precip_in), 0);
+          At = Math.max((v.Tavg_degC > Tb ? At - mt : At - mt + v.Precip_in), 0);
         }
 
-        mt = v.Tavg_C > Tb ? Math.min(At, e*(v.Tavg_C - Tb)) : 0;
-        Pe = v.Tavg_C < Tb ? 0 : v.Precip_in + mt;
+        mt = v.Tavg_degC > Tb ? Math.min(At, e*(v.Tavg_degC - Tb)) : 0;
+        Pe = v.Tavg_degC < Tb ? 0 : v.Precip_in + mt;
 
         W = S + Pe;
         Y = (W + b)/(2 * a) - Math.sqrt(Math.pow((W + b)/(2 * a),2) - (W * b / a));
@@ -318,7 +318,7 @@
 
         return {
             Date: v.Date,
-            Tavg_C: v.Tavg_C,
+            Tavg_degC: v.Tavg_degC,
             Precip_in: v.Precip_in,
             PET_in: v.PET_in,
             W: W,

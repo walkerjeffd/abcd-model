@@ -43,10 +43,12 @@
 {% block content %}
   <div class="row">
     <div class="span12">
-      <strong>Watershed Information</strong>
-      <dd>
-        Name: <input type="text" id="input-name" placeholder="Aberjona River">
-      </dd>
+      <a href="#modal-help" role="button" data-toggle="modal" class="btn btn-success pull-right" id="btn-help">Help</a>
+      <h4>Watershed Information</h4>
+      <form class="form-inline">
+        <label for="#input-name">Name:</label> <input type="text" id="input-name" placeholder="Aberjona River"> 
+        <a class="btn btn-primary" id="btn-save">Save</a>
+      </form>
      <!--  <dd>
        Drainage Area (sq. miles): <input type="text" id="input-area" placeholder="24.7">
      </dd>
@@ -56,7 +58,7 @@
      <dd>
        Longitude (decimal degrees): <input type="text" id="input-lon" placeholder="42.447">
      </dd> -->
-    <a class="btn btn-primary" id="btn-save">Save</a>
+
     </div>
   </div>
   <hr>
@@ -71,6 +73,38 @@
       <div id="chart-precip"></div>
       <div id="chart-pet"></div>
       <div id="chart-flow"></div>
+    </div>
+  </div>
+
+  <div class="modal hide fade" id="modal-help">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      <h3>Datasets Help</h3>
+    </div>
+    <div class="modal-body">
+      <h4>Description</h4>
+      <p>On this page, you load the input dataset and set the name of your watershed. This dataset will be stored in the browser and used on the other interfaces.</p>
+      <hr>
+      <h4>Instructions</h4>
+      <ol>
+        <li>Set name of watershed below "Watershed Information"</li>
+        <li>Drag and drop a CSV file into the drop zone below "Drop Input File"</li>
+        <li>Click "Save" button</li>
+      </ol>
+      <hr>
+      <h4>Input File</h4>
+      <p>The input file must be a standard CSV file with the following columns, which can be in any order:</p>
+      <ul>
+        <li><b>Date</b>: string, format YYYY-MM-DD (e.g. 2014-02-20)</li>
+        <li><b>Precip_in</b>: numeric</li>
+        <li><b>Tmin_degC</b>: numeric</li>
+        <li><b>Tmax_degC</b>: numeric</li>
+        <li><b>PET_in</b>: numeric</li>
+        <li><b>Flow_in</b>: numeric</li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <a href="#" class="btn" data-dismiss="modal">Close</a>
     </div>
   </div>
 {% endblock %}
@@ -184,10 +218,14 @@ function initSave(el) {
 function showShed() {
   var shedData = loadShed();
 
-  $('#input-name').val(shedData['name']);
-  // $('#input-area').val(shedData['area']);
-  // $('#input-lat').val(shedData['lat']);
-  // $('#input-lon').val(shedData['lon']);
+  if(!!shedData == false) {
+    console.log('No saved watershed data');
+  } else {
+    $('#input-name').val(shedData['name']);
+    // $('#input-area').val(shedData['area']);
+    // $('#input-lat').val(shedData['lat']);
+    // $('#input-lon').val(shedData['lon']);    
+  }
 }
 
 function showInput() {
@@ -225,7 +263,7 @@ function plotInput() {
     .width(550)
     .height(200)
     .yVariables(['Tmin_degC', 'Tmax_degC'])
-    .yLabel('Min/Max Air Temperature (degC)')
+    .yLabel('Min/Max Air Temperature (deg C)')
     .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
   var chartPrecip = d3.custom.TimeseriesLineChart()
@@ -418,11 +456,11 @@ function checkInputDates(inputData) {
 // }
 
 // function computePET(latitude, input) {
-//   // Compute PET from watershed latitude and input data containing Date, Tmin_degC, Tmax_degC
+//   // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C
 
 //   input.forEach(function(d) {
-//     var Trng_C = d.Tmax_degC - d.Tmin_degC,
-//         Tavg_C = (d.Tmax_degC + d.Tmin_degC)/2,
+//     var Trng_C = d.Tmax_C - d.Tmin_C,
+//         Tavg_C = (d.Tmax_C + d.Tmin_C)/2,
 //         jday = d3.time.dayOfYear(d.Date),
 //         S0 = computeSolar(latitude, jday),
 //         PET_mm = Trng_C > 0 ? 0.023*S0*(Tavg_C+17.8)*Math.sqrt(Trng_C) : 0;

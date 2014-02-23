@@ -50,15 +50,15 @@ d3.custom.TimeseriesAreaChart = function() {
           .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
           
         gEnter.append('g').attr('class', 'x axis')
-          .attr("transform", "translate(0," + yScale.range()[0] + ")")
+          .attr("transform", "translate(0," + yScale.range()[0] + ")");
+
+        gEnter.append('g').attr('class', 'y axis')
           .append("text")
             .attr("y", 0)
             .attr("x", 5)
             .attr("dy", -5)
             .style("text-anchor", "start")
             .text(yLabel);
-
-        gEnter.append('g').attr('class', 'y axis');
 
         gEnter.append('g').attr('class', 'areas')
           .attr("clip-path", "url(#clip)");

@@ -46,33 +46,71 @@
       <a href="#modal-help" role="button" data-toggle="modal" class="btn btn-success pull-right" id="btn-help">Help</a>
       <h4>Watershed Information</h4>
       <form class="form-inline">
-        <label for="#input-name">Name:</label> <input type="text" id="input-name" placeholder="Aberjona River"> 
+        <label for="#input-name">Name:</label> <input type="text" id="input-name"> 
         <a class="btn btn-primary" id="btn-save">Save</a>
+        <a class="btn btn-danger" id="btn-delete">Delete</a>
       </form>
-     <!--  <dd>
-       Drainage Area (sq. miles): <input type="text" id="input-area" placeholder="24.7">
-     </dd>
-     <dd>
-       Latitude (decimal degrees): <input type="text" id="input-lat" placeholder="42.447">
-     </dd>
-     <dd>
-       Longitude (decimal degrees): <input type="text" id="input-lon" placeholder="42.447">
-     </dd> -->
-
     </div>
   </div>
-  <hr>
-  <div class="row">
-    <div class="span3">
-      <strong>Drop Input File</strong>
-      <div id="holder"></div>
-      <div id="summary-input"></div>
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#tab-input" data-toggle="tab">Input</a></li>
+    <li class="disabled" data-name="pet"><a>PET</a></li>
+    <li class="disabled" data-name="snow"><a>Snow</a></li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane active" id="tab-input">
+      <div class="row">
+        <div class="span3">
+          <h4>Input File</h4>
+          <div id="holder"></div>
+          <div id="summary-input"></div>
+        </div>
+        <div class="span9">
+          <div id="chart-temp"></div>
+          <div id="chart-precip"></div>
+          <div id="chart-flow"></div>
+        </div>
+      </div>
     </div>
-    <div class="span9">
-      <div id="chart-temp"></div>
-      <div id="chart-precip"></div>
-      <div id="chart-pet"></div>
-      <div id="chart-flow"></div>
+    <div class="tab-pane" id="tab-pet">
+      <div class="row" id="pane-pet">
+        <div class="span3">
+          <h4>Potential Evapotranspiration</h4>
+          <dl>
+            <dt>Latitude: <span id="param-latitude"></span></dt>
+            <dd><input class="slider" type="range" min="20" max="55" step="0.1" value="42" name="latitude"/></dd>
+          </dl>
+        </div>
+        <div class="span9">
+          <div id="chart-pet"></div>
+          <div id="chart-solar"></div>
+          <div id="chart-tavg"></div>
+          <div id="chart-trng"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tab-snow">
+      <div class="row" id="pane-snow">
+        <div class="span3">
+          <h4>Snow Melt</h4>
+          <dl>
+            <dt>Initial Snow Depth (in): <span id="param-A0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="20" step="0.1" value="0" name="A0"/></dd>
+            <dt>Temperature Threshold (degC): <span id="param-Tb"></span></dt>
+            <dd><input class="slider" type="range" min="-0.5" max="0.5" step="0.01" value="-0.07" name="Tb"/></dd>
+            <dt>Snowmelt Parameter: <span id="param-e"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="1" step="0.01" value="0.07" name="e"/></dd>
+          </dl>
+        </div>
+        <div class="span9">
+          <div id="chart-eprecip"></div>
+          <div id="chart-rainfall"></div>
+          <div id="chart-snowfall"></div>
+          <div id="chart-snowmelt"></div>
+          <div id="chart-snow"></div>
+          <div id="chart-snow-tavg"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -83,23 +121,24 @@
     </div>
     <div class="modal-body">
       <h4>Description</h4>
-      <p>On this page, you load the input dataset and set the name of your watershed. This dataset will be stored in the browser and used on the other interfaces.</p>
+      <p>On this page, load the input dataset, set the name of your watershed, and configure the computations for Potential Evapotranspiration (PET) and Snowmelt. Once the Save button is clicked, the dataset will be stored in the browser and available for simulation.</p>
       <hr>
       <h4>Instructions</h4>
       <ol>
         <li>Set name of watershed below "Watershed Information"</li>
         <li>Drag and drop a CSV file into the drop zone below "Drop Input File"</li>
+        <li>Click "PET" tab, set latitude</li>
+        <li>Click "Snow" tab, set parameters</li>
         <li>Click "Save" button</li>
       </ol>
       <hr>
       <h4>Input File</h4>
-      <p>The input file must be a standard CSV file with the following columns, which can be in any order:</p>
+      <p>The input file must be a standard CSV file with the following columns:</p>
       <ul>
-        <li><b>Date</b>: string, format YYYY-MM-DD (e.g. 2014-02-20)</li>
+        <li><b>Date</b>: string, format YYYY-MM-DD (e.g. "2014-02-20")</li>
         <li><b>Precip_in</b>: numeric</li>
         <li><b>Tmin_degC</b>: numeric</li>
         <li><b>Tmax_degC</b>: numeric</li>
-        <li><b>PET_in</b>: numeric</li>
         <li><b>Flow_in</b>: numeric</li>
       </ul>
     </div>
@@ -117,103 +156,445 @@
 
 <script>
 
-var dateFormat = d3.time.format('%Y-%m-%d');
-var datasets = {};
+var App = {
+  params: {
+    name: '',
+    latitude: 42,
+    Tb: -0.07124,
+    e: 0.08,
+    A0: 0,
+    input: []
+  },
 
-$(function() {
-  initAll();
-  showAll();
-});
+  init: function() {
+    console.log('Initializing: application');
 
-function initAll() {
-  console.log('Initializing: application');
-  initDragDrop('#holder');
-  initStorage();
-  initSave('#btn-save');
-}
+    this.initDragDrop();
+    this.initStorage();
+    this.initSaveButton();
+    this.initDeleteButton();
+    this.initCharts();
 
-function showAll() {
-  showInput();
-  showShed();
-  plotInput();
-}
+    this.loadDataFromStorage();
+  },
 
-function initStorage() {
-  console.log('Initializing: storage');
-  if (!$.jStorage.storageAvailable()) {
-    console.log('Error: local storage not available');
-  }
+  initDragDrop: function() {
+    console.log('Initializing: drag and drop holder');
+    if (typeof window.FileReader === 'undefined') {
+      alert('FileReader not supported!');
+    }
+    
+    var el = '#holder';
 
-  $.jStorage.listenKeyChange('input', function(key, action){
-    console.log('jStorage: ' + key + ' has been ' + action);
-    plotInput();
-    showInput();
-  });
-}
+    $(el).on('dragover', function () { $(this).addClass('hover'); return false; });
+    $(el).on('dragend', function () { $(this).removeClass('hover'); return false; });
+    $(el).on('drop', function (e) {
+      console.log('Event: file dropped on holder');
+      $(this).removeClass('hover')
+      e.preventDefault();
 
-function initDragDrop(el) {
-  console.log('Initializing: drag and drop holder');
-  if (typeof window.FileReader === 'undefined') {
-    alert('FileReader not supported!');
-  }
+      var file = e.originalEvent.dataTransfer.files[0],
+          reader = new FileReader();
 
-  $(el).on('dragover', function () { $(this).addClass('hover'); return false; });
-  $(el).on('dragend', function () { $(this).removeClass('hover'); return false; });
-  $(el).on('drop', function (e) {
-    console.log('Event: file dropped on holder');
-    $(this).removeClass('hover')
-    e.preventDefault();
+      var fileName = file.name,
+          fileNameParts = fileName.split('.'),
+          fileExtension = fileNameParts[fileNameParts.length-1].toLowerCase();
 
-    var file = e.originalEvent.dataTransfer.files[0],
-        reader = new FileReader();
+      var parser;
+      if (fileExtension == "json") {
+        parser = JSON.parse;
+      } else if (fileExtension == "csv") {
+        parser = d3.csv.parse;
+      } else {
+        console.log("Error: Unable to infer format for filename " + fileName + " (must end in .csv or .json)");
+        return false;
+      }
 
-    var fileName = file.name,
-        fileNameParts = fileName.split('.'),
-        fileExtension = fileNameParts[fileNameParts.length-1].toLowerCase();
+      reader.onload = function (event) {
+        var data = parser(event.target.result);
+        App.loadDataFromFile(data);
+      };
 
-    var parser;
-    if (fileExtension == "json") {
-      parser = loadJsonFromString
-    } else if (fileExtension == "csv") {
-      parser = loadCsvFromString
-    } else {
-      console.log("Error: Unable to infer format for filename " + fileName + " (must end in .csv or .json)");
+      reader.readAsText(file);
+
+      return false;
+    });
+  },
+
+  initSaveButton: function() {
+    $('#btn-save').on('click', function(e) {
+      e.preventDefault();
+      App.saveDataToStorage();
+    })
+  },
+
+  initDeleteButton: function() {
+    $('#btn-delete').on('click', function(e) {
+      e.preventDefault();
+      App.clearStorage();
+    })
+  },
+
+  initStorage: function() {
+    console.log('Initializing: storage');
+    if (!$.jStorage.storageAvailable()) {
+      console.log('Error: local storage not available');
       return false;
     }
+    return true;
+  },
 
-    reader.onload = function (event) {
-      var parsedData = parser(event.target.result);
-      var processedData = processInput(parsedData);
-      
-      if (processedData === null) {
-        console.log('Error: Processing data failed');
-      } else {
-        console.log('Processing data complete');
-        saveInput(processedData);
-      }
+  initCharts: function() {
+    console.log('Initializing: charts');
+    this.charts = [];
+    // this.charts.push({
+    //   key: 'Snowmelt',
+    //   group: 'snow',
+    //   el: '#chart-snowmelt',
+    //   chart: d3.custom.TimeseriesLineChart()
+    //             .x(function(d) { return d.Date; })
+    //             .width(550)
+    //             .height(100)
+    //             .yVariables(['Snowmelt_in'])
+    //             .yLabel('Snow Melt (in/d)')
+    //             .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    // });
+
+    this.charts.push({
+      key: 'Snow',
+      group: 'snow',
+      el: '#chart-snow',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Snow_in'])
+                .yLabel('Snow Depth (in)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Snow-Tavg',
+      group: 'input',
+      el: '#chart-snow-tavg',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Tavg_degC'])
+                .yLabel('Average Air Temperature (deg C)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Snowfall',
+      group: 'snow',
+      el: '#chart-snowfall',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Snowfall_in'])
+                .yLabel('Precipitation as Snow (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Rainfall',
+      group: 'snow',
+      el: '#chart-rainfall',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Rainfall_in'])
+                .yLabel('Precipitation as Rain (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'EffectivePrecip',
+      group: 'snow',
+      el: '#chart-eprecip',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['EPrecip_in'])
+                .yLabel('Effective Precipitation (Rain + Snow Melt) (in)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Solar',
+      group: 'pet',
+      el: '#chart-solar',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Solar_in'])
+                .yLabel('Solar Radiation (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'PET',
+      group: 'pet',
+      el: '#chart-pet',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['PET_in'])
+                .yLabel('Potential Evapotranspiration (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Tavg',
+      group: 'input',
+      el: '#chart-tavg',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Tavg_degC'])
+                .yLabel('Average Air Temperature (deg C)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Trng',
+      group: 'input',
+      el: '#chart-trng',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Trng_degC'])
+                .yLabel('Range Air Temperature (deg C)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Temp',
+      group: 'input',
+      el: '#chart-temp',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Tmin_degC', 'Tmax_degC'])
+                .yLabel('Min/Max Air Temperature (deg C)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Precip',
+      group: 'input',
+      el: '#chart-precip',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Precip_in'])
+                .yLabel('Precipitation (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+
+    this.charts.push({
+      key: 'Flow',
+      group: 'input',
+      el: '#chart-flow',
+      chart: d3.custom.TimeseriesLineChart()
+                .x(function(d) { return d.Date; })
+                .width(550)
+                .height(150)
+                .yVariables(['Flow_in'])
+                .yLabel('Observed Flow (in/d)')
+                .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+  },
+
+  initSliders: function() {
+    console.log('Initializing: sliders');
+    var params = this.params;
+    var app = this;
+
+    // set label to current value
+    $(".slider").each(function() {
+      this.value = +params[this.name];
+      $("#param-"+this.name).text(this.value);
+    });
+
+    $(".slider").change(function() {
+      $("#param-"+this.name).text(this.value);
+      app.changeParameter(this.name, +this.value);
+    });
+
+    // $(".slider").on('mouseup', function() {
+    //   console.log('Saving solar');
+    //   saveInput(inputData);
+    // });
+  },
+
+  changeParameter: function(name, value) {    
+    this.params[name] = value;
+    this.computeAll();
+  },
+
+  loadDataFromFile: function(data) {
+    // parse rows
+    console.log('Parsing rows');
+    var dateFormat = d3.time.format('%Y-%m-%d');
+    var parsers = {
+      'Date': function(v) { return dateFormat.parse(v); }, 
+      'Precip_in': function(v) { return +v; }, 
+      'Tmin_degC': function(v) { return +v; }, 
+      'Tmax_degC': function(v) { return +v; },
+      'Flow_in': function(v) { return +v; }
     };
 
-    reader.readAsText(file);
+    data.forEach(function(row) {
+      d3.keys(parsers).forEach(function (key) {
+        if (key in row) {
+          row[key] = parsers[key](row[key]); 
+        }
+      });
+    });
 
-    return false;
-  });
+    // sort dates
+    console.log('Sorting data by Date');
+    data.sort(function (a, b) {
+      if (a['Date'] < b['Date'])
+        return -1;
+      if (a['Date'] > b['Date'])
+        return 1;
+      return 0;
+    });
+
+    // check dates
+    console.log('Checking dates');
+    if (!checkDates(_.pluck(data, 'Date'))) {
+      console.log('Dates of input data are either incomplete or incorrect');
+      return null;
+    }
+
+    // compute derived
+    data.forEach(function(d) {
+      d.Jday = d3.time.dayOfYear(d.Date) + 1;
+      d.Trng_degC = d.Tmax_degC - d.Tmin_degC;
+      d.Tavg_degC = (d.Tmax_degC + d.Tmin_degC)/2;
+    });      
+
+    App.params['input'] = data;
+    this.initView();
+  },
+
+  loadDataFromStorage: function() {
+    var storedData = $.jStorage.get('abcd');
+
+    if (!!storedData) {
+      storedData['input'].forEach(function(d) {
+        d.Date = new Date(d.Date);
+      });
+      this.params = storedData;
+      this.initView();
+    }
+  },
+
+  initView: function() {
+    this.initSliders();
+    this.renderGroup('input');
+    this.computeAll();
+
+    // enable tabs
+    $('.nav-tabs').children('li.disabled').each(function(i, el) {
+      $(el).toggleClass('disabled');
+      $(el).children('a').attr('data-toggle', 'tab');
+      $(el).children('a').attr('href', "#tab-" + $(el).attr('data-name'));
+    });
+
+    // add name
+    $('#input-name').val(this.params['name']);
+  },
+
+  saveDataToStorage: function() {
+    console.log('Saving: data');
+    this.params['name'] = $('#input-name').val();
+    $.jStorage.set('abcd', this.params);
+  },
+
+  clearStorage: function() {
+    console.log('Saving: data');
+    $.jStorage.flush();
+    location.reload();
+  },
+
+  computeAll: function() {
+    this.computePET();
+    this.computeSnow();
+  },
+
+  computePET: function() {
+    // compute derived variables
+    var latitude = this.params['latitude'];
+    this.params['input'].forEach(function(d) {
+      d.Solar_in = computeSolar(latitude, d.Jday);
+      d.PET_in = computePET(d.Trng_degC, d.Tavg_degC, d.Solar_in);
+    });
+    this.renderGroup('pet');
+  },
+
+  computeSnow: function() {
+    var Tb = this.params['Tb'],
+        e = this.params['e'],
+        A0 = this.params['A0'];
+
+    var Snow_in, Snowmelt_in, Snowfall_in, Rainfall_in, EPrecip_in;
+    this.params['input'].forEach(function(d, i) {
+      if (i === 0) {
+        Snow_in = A0;
+      } else {
+        Snow_in = computeSnowDepth(Snow_in, Snowmelt_in, Snowfall_in);
+      }
+      
+      Rainfall_in = computeRainfall(Tb, d.Tavg_degC, d.Precip_in);
+      Snowfall_in = computeSnowfall(Tb, d.Tavg_degC, d.Precip_in);
+      Snowmelt_in = computeSnowMelt(Snow_in, d.Tavg_degC, Tb, e);
+      EPrecip_in = computeEffectivePrecip(Rainfall_in, Snowmelt_in);
+
+      d.Rainfall_in = Rainfall_in;
+      d.Snowfall_in = Snowfall_in;
+      d.Snow_in = Snow_in;
+      d.Snowmelt_in = Snowmelt_in;
+      d.EPrecip_in = EPrecip_in;
+    });
+
+    this.renderGroup('snow');
+  },
+
+  renderAll: function() {
+    this.renderGroup('input');
+    this.renderGroup('pet');
+    this.renderGroup('snow');
+  },
+
+  renderGroup: function(group) {
+    var data = this.params['input'];
+    this.charts.forEach(function(d) {
+      if (d['group'] === group) {
+        d3.select(d['el']).call(d['chart'].data(data));
+      }
+    });
+  }
 }
 
-function initSave(el) {
-  $(el).on('click', function(e) {
-    console.log('Click: save');
-    e.preventDefault();
-    
-    var shedData = {};
+$(function() {
+  App.init();
+});
 
-    shedData['name'] = $('#input-name').val();
-    // shedData['area'] = $('#input-area').val();
-    // shedData['lat'] = $('#input-lat').val();
-    // shedData['lon'] = $('#input-lon').val();
-
-    saveShed(shedData);
-  })
-}
 
 function showShed() {
   var shedData = loadShed();
@@ -230,8 +611,6 @@ function showShed() {
 
 function showInput() {
   console.log('Show: input summary');
-  var inputData = loadInput();
-
   if (!!inputData == false) {
     $('#summary-input').text('No available input dataset');
   } else {
@@ -251,49 +630,97 @@ function showInput() {
   }
 }
 
-function plotInput() {
-  console.log('Show: input plots');
-  var inputData = loadInput();
+function loadInput() {
+  console.log('Loading: input');
+  var dataset = $.jStorage.get('input');
+  if (dataset === null) {
+    console.log('Warning: input dataset not found in local storage');
+    return null;
+  } else {
+    dataset.forEach(function(d) {
+      d.Date = new Date(d.Date);
+    });
+    return dataset;
+  }
+}
 
-  if (!!inputData == false) {
+function loadShed() {
+  console.log('Loading: shed');
+  var dataset = $.jStorage.get('shed');
+  if (dataset === null) {
+    console.log('Warning: shed dataset not found in local storage');
+    return null;
+  } else {
+    return dataset;
+  }
+}
+
+function checkDates(dates) {
+  // dates: array of Date objects
+  var startDate = dates[0],
+      endDate = dates[dates.length-1],
+      expectedDates = d3.time.days(startDate, d3.time.day.offset(endDate, 1));
+
+  // Check matching lengths
+  if (expectedDates.length !== dates.length) {
+    console.log('Error: Length of input dates does not match length of expected dates (' + dates.length + ', ' + expectedDates.length + ')');
     return false;
   }
-  var chartTemp = d3.custom.TimeseriesLineChart()
-    .x(function(d) { return d.Date; })
-    .width(550)
-    .height(200)
-    .yVariables(['Tmin_degC', 'Tmax_degC'])
-    .yLabel('Min/Max Air Temperature (deg C)')
-    .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
-  var chartPrecip = d3.custom.TimeseriesLineChart()
-    .x(function(d) { return d.Date; })
-    .width(550)
-    .height(200)
-    .yVariables(['Precip_in'])
-    .yLabel('Precipitation (in/d)')
-    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+  for (var i=0, n=dates.length; i<n; i++) {
+    // Check for null date
+    if (dates[i] === null) {
+      console.log('Error: date at row ' + i + ' could not be parsed, format must be YYYY-mm-dd (e.g. 2000-05-15)');
+      return false;
+    }
 
-  var chartPET = d3.custom.TimeseriesLineChart()
-    .x(function(d) { return d.Date; })
-    .width(550)
-    .height(200)
-    .yVariables(['PET_in'])
-    .yLabel('Potential Evapotranspiration (in/d)')
-    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+    // Check date matches expected date
+    if ((dates[i] - expectedDates[i]) !== 0) {
+      console.log('Error: unexpected date ' + dateFormat(dates[i]) + ' at row ' + i + ', expected ' + dateFormat(expectedDates[i]));
+      return false;
+    }
+  }
 
-  var chartFlow = d3.custom.TimeseriesLineChart()
-    .x(function(d) { return d.Date; })
-    .width(550)
-    .height(200)
-    .yVariables(['Flow_in'])
-    .yLabel('Observed Flow (in/d)')
-    .yAxis(d3.svg.axis().ticks(5).orient("left"));
+  return true;
+}
 
-  d3.select('#chart-temp').call(chartTemp.data(inputData));
-  d3.select('#chart-precip').call(chartPrecip.data(inputData));
-  d3.select('#chart-pet').call(chartPET.data(inputData));
-  d3.select('#chart-flow').call(chartFlow.data(inputData));
+function computeSolar(latitude, Jday) {
+  // section 4.4.2 of Handbook of Hydrology, Maidment
+  // good for latitudes of -55 to +55
+  var latitudeRadians = latitude/180*Math.PI,
+      r = 1 + 0.033*Math.cos(2*Math.PI*Jday/365),
+      delta = 0.4093*Math.sin((2*Math.PI*Jday/365) - 1.405),
+      omega = Math.acos(-Math.tan(latitudeRadians)*Math.tan(delta)),
+      daylight = 24*omega/Math.PI,
+      S0_mm = 15.392*r*(Math.sin(latitudeRadians)*omega*Math.sin(delta) + Math.cos(latitudeRadians)*Math.cos(delta)*Math.sin(omega)),
+      S0_in = S0_mm*0.03937;
+  
+  return S0_in;
+}
+
+function computePET(Trng_degC, Tavg_degC, Solar_in) {
+  // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C 
+  return Trng_degC > 0 ? 0.023*Solar_in*(Tavg_degC+17.8)*Math.sqrt(Trng_degC) : 0;
+}
+
+function computeSnowMelt(Snow_in, Tavg_degC, Tb, e) {
+  return Tavg_degC > Tb ? Math.min(Snow_in, e*(Tavg_degC - Tb)) : 0;
+}
+
+function computeRainfall(Tb, Tavg_degC, Precip_in) {
+  return Tavg_degC > Tb ? Precip_in : 0;
+}
+
+function computeSnowfall(Tb, Tavg_degC, Precip_in) {
+  return Tavg_degC > Tb ? 0 : Precip_in;
+}
+
+function computeSnowDepth(Snow_in, Snowmelt_in, Snowfall_in) {
+  return Math.max(Snow_in - Snowmelt_in + Snowfall_in, 0);
+}
+
+function computeEffectivePrecip(Rainfall_in, Snowmelt_in) {
+  return Rainfall_in + Snowmelt_in;
 }
 
 function loadCsvFromString(stringData) {
@@ -348,128 +775,6 @@ function loadJsonFromString(stringData) {
 
   return parseData;
 }
-
-function saveInput(inputData) {
-  console.log('Saving: input');
-  $.jStorage.set('input', inputData);
-}
-
-function loadInput() {
-  console.log('Loading: input');
-  var dataset = $.jStorage.get('input');
-  if (dataset === null) {
-    console.log('Warning: input dataset not found in local storage');
-    return null;
-  } else {
-    dataset.forEach(function(d) {
-      d.Date = new Date(d.Date);
-    });
-    return dataset;
-  }
-}
-
-function loadShed() {
-  console.log('Loading: shed');
-  var dataset = $.jStorage.get('shed');
-  if (dataset === null) {
-    console.log('Warning: shed dataset not found in local storage');
-    return null;
-  } else {
-    return dataset;
-  }
-}
-
-function saveShed(shedData) {
-  console.log('Saving: shed');
-  $.jStorage.set('shed', shedData);
-}
-
-function processInput(inputData) {
-  console.log('Processing: input');
-  sortedInputData = sortInputByDate(inputData);
-  var flagDates = checkInputDates(sortedInputData);
-  if (!flagDates) {
-    console.log('Dates of input data are either incomplete or incorrect');
-    return null;
-  }
-  return sortedInputData;
-}
-
-function sortInputByDate(inputData) {
-  console.log('Sorting: input');
-  function compare(a, b) {
-    if (a['Date'] < b['Date'])
-      return -1;
-    if (a['Date'] > b['Date'])
-      return 1;
-    return 0;
-  }
-
-  return inputData.sort(compare);
-}
-
-function checkInputDates(inputData) {
-  console.log('Checking: input dates');
-  // Check input data
-  var startDate = inputData[0]['Date'],
-      endDate = inputData[inputData.length-1]['Date'],
-      expectedDates = d3.time.days(startDate, d3.time.day.offset(endDate, 1));
-
-  // console.log(startDate, endDate, inputData.length, expectedDates.length);
-
-  // check all dates were parsed
-  for (var i=0; i<inputData.length; i++) {
-    if (inputData[i]['Date'] === null) {
-      console.log('Error: parsing date at row ' + i + ' failed, format must be YYYY-mm-dd (e.g. 2000-05-15)');
-      return false;
-    }
-  }
-
-  // Check matching lengths
-  if (expectedDates.length !== inputData.length) {
-    console.log('Error: Length of input dataset does not match length of expected dates (' + inputData.length + ', ' + expectedDates.length + ')');
-    return false;
-  }
-
-  x = inputData[0]['Date'];
-  y = expectedDates[0];
-
-  for (var i=0; i<inputData.length; i++) {
-    if ((inputData[i]['Date'] - expectedDates[i]) !== 0) {
-      console.log('Error: unexpected date ' + dateFormat(inputData[i]['Date']) + ' at row ' + i + ', expected ' + dateFormat(expectedDates[i]));
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// function computeSolar(latitude, jday) {
-//   var r = 1 + 0.033*Math.cos(2*Math.PI*jday/365),
-//       delta = 0.4093*Math.sin((2*Math.PI*jday/365) - 1.405),
-//       latitudeDegrees = latitude/180*Math.PI,
-//       omega = Math.acos(-Math.tan(latitudeDegrees)*Math.tan(delta)),
-//       daylight = 24*omega/Math.PI,
-//       S0_mm = 15.392*r*(Math.sin(latitudeDegrees)*omega*Math.sin(delta) + Math.cos(latitudeDegrees)*Math.cos(delta)*Math.sin(omega)),
-//       S0_in = S0_mm*0.03937;
-//   return S0_in;
-// }
-
-// function computePET(latitude, input) {
-//   // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C
-
-//   input.forEach(function(d) {
-//     var Trng_C = d.Tmax_C - d.Tmin_C,
-//         Tavg_C = (d.Tmax_C + d.Tmin_C)/2,
-//         jday = d3.time.dayOfYear(d.Date),
-//         S0 = computeSolar(latitude, jday),
-//         PET_mm = Trng_C > 0 ? 0.023*S0*(Tavg_C+17.8)*Math.sqrt(Trng_C) : 0;
-    
-//     d.PET_in = PET_mm*0.03937;
-//   })
-
-//   return input;
-// }
 
 </script>
 

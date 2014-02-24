@@ -153,24 +153,6 @@
       'PET': 1.0
     },
 
-    eqns: {
-      Y: function(W) {
-        return (W+App.params.b)/(2*App.params.a) - Math.sqrt(Math.pow((W+App.params.b)/(2*App.params.a),2) - (W*App.params.b/App.params.a));  
-      },
-      S: function(W) {
-        return App.eqns.Y(W)*Math.exp(-App.params.PET/App.params.b);
-      },
-      ET: function(W) {
-        return App.eqns.Y(W) - App.eqns.S(W);
-      },
-      Qrecharge: function(W) {
-        return App.params.c*(W - App.eqns.Y(W));
-      },
-      Qrunoff: function(W) {
-        return (1-App.params.c)*(W - App.eqns.Y(W));
-      }
-    },
-
     init: function() {
       var that = this;
       
@@ -188,18 +170,14 @@
       //   .range(["#444444", "#ffbb78", "#aec7e8", "#1f77b4", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"])
       //   .domain(['Q', 'S', 'ET', 'GR', 'DR', 'G', 'dG', 'P']);
 
-      var components = d3.select('#diagram').selectAll('.component');
-      components.each(function(d,i) {
-        var key  = this.getAttribute('id');
-        key = key.slice(5, key.length);
-        this.setAttribute('fill', that.colors(key));
-      });
+      this.initDiagram(this.colors);
+      this.initTheoryChart();
 
       this.chartLine = d3.custom.TimeseriesLineChart()
         .x(function(d) { return d.Date; })
         .width(550)
         .height(200)
-        .yVariables(['dG', 'DR', 'Q'])
+        .yVariables(['Q'])
         .yDomain([0.001, 2])
         .yScale(d3.scale.log())
         .color(this.colors);
@@ -228,20 +206,6 @@
           console.log(d.name);
         });
 
-      this.chartStructure = d3.custom.ComponentChart()
-        .width(270)
-        .height(200)
-        .funcs([
-          {label: 'Soil', name: 'S', func: this.eqns.S},
-          {label: 'ET', name: 'ET', func: this.eqns.ET},
-          {label: 'Runoff', name: 'DR', func: this.eqns.Qrunoff},
-          {label: 'Recharge', name: 'GR', func: this.eqns.Qrecharge}
-        ])
-        .colors(this.colors)
-        .xLabel('Available Water[t] = Precip[t] + Soil[t-1]')
-        .xDomain([0, 10])
-        .yDomain([0, 10])
-        .yLabel('Soil Moisture Component');
 
       $(".slider").each(function() {
         this.value = +that.params[this.name];
@@ -258,26 +222,62 @@
       this.loadData();
     },
 
+    initDiagram: function(colors) {
+      var components = d3.select('#diagram').selectAll('.component');
+      components.each(function(d,i) {
+        var key  = this.getAttribute('id');
+        key = key.slice(5, key.length);
+        this.setAttribute('fill', colors(key));
+      });
+    },
+
+    initTheoryChart: function() {
+      this.chartStructure = d3.custom.ComponentChart()
+        .width(270)
+        .height(200)
+        .funcs([
+          {label: 'Soil', name: 'S', func: this.eqns.S},
+          {label: 'ET', name: 'ET', func: this.eqns.ET},
+          {label: 'Runoff', name: 'DR', func: this.eqns.Qrunoff},
+          {label: 'Recharge', name: 'GR', func: this.eqns.Qrecharge}
+        ])
+        .colors(this.colors)
+        .xLabel('Effective Precip[t] + Soil Moisture[t-1]')
+        .xDomain([0, 10])
+        .yDomain([0, 10])
+        .yLabel('Soil Moisture Component');
+    },
+
+    eqns: {
+      Y: function(W) {
+        return (W+App.params.b)/(2*App.params.a) - Math.sqrt(Math.pow((W+App.params.b)/(2*App.params.a),2) - (W*App.params.b/App.params.a));  
+      },
+      S: function(W) {
+        return App.eqns.Y(W)*Math.exp(-App.params.PET/App.params.b);
+      },
+      ET: function(W) {
+        return App.eqns.Y(W) - App.eqns.S(W);
+      },
+      Qrecharge: function(W) {
+        return App.params.c*(W - App.eqns.Y(W));
+      },
+      Qrunoff: function(W) {
+        return (1-App.params.c)*(W - App.eqns.Y(W));
+      }
+    },
+
     loadData: function() {
       console.log('Loading: input');
-      var dataset = $.jStorage.get('input');
-      if (dataset === null) {
-        console.log('Warning: input dataset not found in local storage');
-        return null;
-      } else {
-        dataset.forEach(function(d) {
+      var storedData = $.jStorage.get('abcd');
+
+      if (storedData) {
+        storedData['input'].forEach(function(d) {
           d.Date = new Date(d.Date);
         });
-        this.inp = dataset;
-      }
+        
+        this.inp = storedData['input'];
 
-      if (!!this.inp == false) {
-        console.log();('Error: could not load data')
-      } else {
-        this.inp.forEach(function(d) {
-          // d.Date = dateFormat.parse(d.Date);
-          d.Tavg_degC = (d.Tmin_degC + d.Tmax_degC)/2;
-        });
+        this.params = _.extend(this.params, _.omit(storedData['params'], 'input'));
         this.render();
       }
     },

@@ -195,6 +195,185 @@ d3.custom.TimeseriesAreaChart = function() {
   return chart;
 };
 
+d3.custom.Timeseries = function() {
+  var svg,
+      margin = {top: 20, right: 20, bottom: 30, left: 50},
+      width = 960,
+      height = 500,
+      xScale = d3.time.scale(),
+      yScale = d3.scale.linear(),
+      xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
+      yAxis = d3.svg.axis().ticks(5, "g").orient("left"),
+      xValue = function(d) { return d[xVariable]; },
+      yValue = function(d) { return d[yVariable]; },
+      color = d3.scale.category10(),
+      yLabel = "",
+      line = d3.svg.line().x(X).y(Y),
+      chartData = [],
+      xVariable = 0,
+      yVariable = 1,
+      yDomain,
+      lines;
+
+  function chart(selection) {
+    xScale
+      .range([0, width - margin.left - margin.right])
+      .domain(d3.extent(chartData, xValue));
+    yScale
+      .range([height - margin.top - margin.bottom, 0]);
+
+    yAxis.scale(yScale);
+    xAxis.scale(xScale);
+
+    if (!svg) {
+      svg = selection.append('svg')
+        .attr("width", width)
+        .attr("height", height);
+
+      var gEnter = svg.append('g')
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+      gEnter.append('g').attr('class', 'x axis')
+        .attr("transform", "translate(0," + yScale.range()[0] + ")");
+
+      gEnter.append('g').attr('class', 'y axis')
+        .append("text")
+          .attr("y", 0)
+          .attr("x", 5)
+          .attr("dy", -5)
+          .style("text-anchor", "start")
+          .text(yLabel);
+
+      gEnter.append('g').attr('class', 'lines')
+        .attr("clip-path", "url(#clip)");
+
+      var clip = svg.append("defs").append("clipPath")
+        .attr("id", "clip")
+        .append("rect")
+        .attr("id", "clip-rect")
+        .attr("x", "0")
+        .attr("y", "0")
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom);
+    }
+
+    var g = svg.select('g');
+
+    g.select('.x.axis')
+        .call(xAxis);
+
+    updateYaxis();
+
+    lines = g.select('g.lines').selectAll('.line')
+        .data([chartData]);
+    
+    lines.enter().append('path').attr('class', 'line').style("stroke", function(d) { return color(yVariable); });
+    
+    lines.attr("d", line);
+
+    lines.exit().remove();
+  }
+
+  function X(d) {
+    return xScale(xValue(d));
+  }
+
+  function Y(d) {
+    return yScale(yValue(d));
+  }
+
+  function updateLine() {
+    lines.attr("d", line);
+  }
+
+  function updateYaxis() {
+    yScale
+      .domain(yDomain || [d3.min([0, d3.min(chartData, yValue)]), d3.max(chartData, yValue)*1.1]);
+
+    svg.select('.y.axis')
+        .call(yAxis);
+  }
+
+  chart.update = function() {
+    updateYaxis();
+    updateLine();
+  }
+
+  chart.width = function(_) {
+    if (!arguments.length) return width;
+    width = _;
+    return chart;
+  };
+
+  chart.height = function(_) {
+    if (!arguments.length) return height;
+    height = _;
+    return chart;
+  };
+
+  chart.x = function(_) {
+    if (!arguments.length) return xValue;
+    xValue = _;
+    return chart;
+  };
+
+  chart.y = function(_) {
+    if (!arguments.length) return yValue;
+    yValue = _;
+    return chart;
+  };
+
+  chart.yLabel = function(_) {
+    if (!arguments.length) return yLabel;
+    yLabel = _;
+    return chart;
+  };
+
+  chart.data = function(_) {
+    if (!arguments.length) return chartData;
+    chartData = _;
+    return chart;
+  };
+
+  chart.xVariable = function(_) {
+    if (!arguments.length) return xVariable;
+    xVariable = _;
+    return chart;
+  };
+
+  chart.yVariable = function(_) {
+    if (!arguments.length) return yVariable;
+    yVariable = _;
+    return chart;
+  };
+
+  chart.yDomain = function(_) {
+    if (!arguments.length) return yDomain;
+    yDomain = _;
+    return chart;
+  };
+
+  chart.yScale = function(_) {
+    if (!arguments.length) return yScale;
+    yScale = _;
+    return chart;
+  };
+
+  chart.yAxis = function(_) {
+    if (!arguments.length) return yAxis;
+    yAxis = _;
+    return chart;
+  };
+
+  chart.color = function(_) {
+    if (!arguments.length) return color;
+    color = _;
+    return chart;
+  };
+
+  return chart;
+}
+
 d3.custom.TimeseriesLineChart = function() {
   var svg,
       margin = {top: 20, right: 20, bottom: 30, left: 50},

@@ -96,9 +96,9 @@
           <dl>
             <dt>Initial Snow Depth (in): <span id="param-A0"></span></dt>
             <dd><input class="slider" type="range" min="0" max="20" step="0.1" value="0" name="A0"/></dd>
-            <dt>Temperature Threshold (degC): <span id="param-Tb"></span></dt>
+            <dt>Base Temperature (degC): <span id="param-Tb"></span></dt>
             <dd><input class="slider" type="range" min="-0.5" max="0.5" step="0.01" value="-0.07" name="Tb"/></dd>
-            <dt>Snowmelt Parameter: <span id="param-e"></span></dt>
+            <dt>Melt Factor: <span id="param-e"></span></dt>
             <dd><input class="slider" type="range" min="0" max="1" step="0.01" value="0.07" name="e"/></dd>
           </dl>
         </div>
@@ -157,22 +157,26 @@
 <script>
 
 var App = {
-  params: {
+  defaultParams: {
     name: '',
     latitude: 42,
     Tb: -0.07124,
     e: 0.08,
-    A0: 0,
-    input: []
+    A0: 0
   },
 
   init: function() {
     console.log('Initializing: application');
 
+    this.model = createModel();
+    this.params = this.defaultParams;
+
     this.initDragDrop();
     this.initStorage();
     this.initSaveButton();
     this.initDeleteButton();
+
+    this.initSliders();
     this.initCharts();
 
     this.loadDataFromStorage();
@@ -247,28 +251,16 @@ var App = {
   initCharts: function() {
     console.log('Initializing: charts');
     this.charts = [];
-    // this.charts.push({
-    //   key: 'Snowmelt',
-    //   group: 'snow',
-    //   el: '#chart-snowmelt',
-    //   chart: d3.custom.TimeseriesLineChart()
-    //             .x(function(d) { return d.Date; })
-    //             .width(550)
-    //             .height(100)
-    //             .yVariables(['Snowmelt_in'])
-    //             .yLabel('Snow Melt (in/d)')
-    //             .yAxis(d3.svg.axis().ticks(5).orient("left"))
-    // });
 
     this.charts.push({
       key: 'Snow',
       group: 'snow',
       el: '#chart-snow',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Snow_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Snow_in'])
                 .yLabel('Snow Depth (in)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -277,11 +269,11 @@ var App = {
       key: 'Snow-Tavg',
       group: 'input',
       el: '#chart-snow-tavg',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Tavg_degC')
                 .width(550)
                 .height(150)
-                .yVariables(['Tavg_degC'])
                 .yLabel('Average Air Temperature (deg C)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -290,11 +282,11 @@ var App = {
       key: 'Snowfall',
       group: 'snow',
       el: '#chart-snowfall',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Snowfall_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Snowfall_in'])
                 .yLabel('Precipitation as Snow (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -303,11 +295,11 @@ var App = {
       key: 'Rainfall',
       group: 'snow',
       el: '#chart-rainfall',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Rainfall_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Rainfall_in'])
                 .yLabel('Precipitation as Rain (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -316,11 +308,11 @@ var App = {
       key: 'EffectivePrecip',
       group: 'snow',
       el: '#chart-eprecip',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('EPrecip_in')
                 .width(550)
                 .height(150)
-                .yVariables(['EPrecip_in'])
                 .yLabel('Effective Precipitation (Rain + Snow Melt) (in)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -329,11 +321,11 @@ var App = {
       key: 'Solar',
       group: 'pet',
       el: '#chart-solar',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Solar_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Solar_in'])
                 .yLabel('Solar Radiation (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -342,11 +334,11 @@ var App = {
       key: 'PET',
       group: 'pet',
       el: '#chart-pet',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('PET_in')
                 .width(550)
                 .height(150)
-                .yVariables(['PET_in'])
                 .yLabel('Potential Evapotranspiration (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -355,11 +347,11 @@ var App = {
       key: 'Tavg',
       group: 'input',
       el: '#chart-tavg',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Tavg_degC')
                 .width(550)
                 .height(150)
-                .yVariables(['Tavg_degC'])
                 .yLabel('Average Air Temperature (deg C)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -368,11 +360,11 @@ var App = {
       key: 'Trng',
       group: 'input',
       el: '#chart-trng',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Trng_degC')
                 .width(550)
                 .height(150)
-                .yVariables(['Trng_degC'])
                 .yLabel('Range Air Temperature (deg C)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -394,11 +386,11 @@ var App = {
       key: 'Precip',
       group: 'input',
       el: '#chart-precip',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Precip_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Precip_in'])
                 .yLabel('Precipitation (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
     });
@@ -407,20 +399,25 @@ var App = {
       key: 'Flow',
       group: 'input',
       el: '#chart-flow',
-      chart: d3.custom.TimeseriesLineChart()
-                .x(function(d) { return d.Date; })
+      chart: d3.custom.Timeseries()
+                .xVariable('Date')
+                .yVariable('Flow_in')
                 .width(550)
                 .height(150)
-                .yVariables(['Flow_in'])
                 .yLabel('Observed Flow (in/d)')
                 .yAxis(d3.svg.axis().ticks(5).orient("left"))
+    });
+  },
+
+  showCharts: function() {
+    this.charts.forEach(function(d) {
+      d3.select(d['el']).call(d['chart'].data(App.model.output()));
     });
   },
 
   initSliders: function() {
     console.log('Initializing: sliders');
     var params = this.params;
-    var app = this;
 
     // set label to current value
     $(".slider").each(function() {
@@ -430,7 +427,7 @@ var App = {
 
     $(".slider").change(function() {
       $("#param-"+this.name).text(this.value);
-      app.changeParameter(this.name, +this.value);
+      App.changeParameter(this.name, +this.value);
     });
 
     // $(".slider").on('mouseup', function() {
@@ -439,9 +436,33 @@ var App = {
     // });
   },
 
+  initView: function() {
+    this.compute();
+    this.showCharts();
+    this.renderGroup('input');
+    
+    // enable tabs
+    $('.nav-tabs').children('li.disabled').each(function(i, el) {
+      $(el).toggleClass('disabled');
+      $(el).children('a').attr('data-toggle', 'tab');
+      $(el).children('a').attr('href', "#tab-" + $(el).attr('data-name'));
+    });
+
+    // add name
+    $('#input-name').val(this.params['name']);
+  },
+
+  paramCharts: {
+    'Tb': 'snow',
+    'A0': 'snow',
+    'e': 'snow',
+    'latitude': 'pet'
+  },
+
   changeParameter: function(name, value) {    
     this.params[name] = value;
-    this.computeAll();
+    this.compute();
+    this.renderGroup(this.paramCharts[name]);
   },
 
   loadDataFromFile: function(data) {
@@ -488,91 +509,45 @@ var App = {
       d.Tavg_degC = (d.Tmax_degC + d.Tmin_degC)/2;
     });      
 
-    App.params['input'] = data;
-    this.initView();
+    this.loadData(this.defaultParams, data);
   },
 
   loadDataFromStorage: function() {
-    var storedData = $.jStorage.get('abcd');
-
-    if (!!storedData) {
-      storedData['input'].forEach(function(d) {
-        d.Date = new Date(d.Date);
-      });
-      this.params = storedData;
-      this.initView();
+    var params = $.jStorage.get('params'),
+        dataset = $.jStorage.get('dataset');
+    if (params && dataset) {
+      console.log('Loading: data from storage');
+      for (var i = 0, len = dataset.length; i < len; i++) {
+        dataset[i]['Date'] = new Date(dataset[i]['Date']);
+      }
+      this.loadData(params, dataset);
     }
   },
 
-  initView: function() {
-    this.initSliders();
-    this.renderGroup('input');
-    this.computeAll();
-
-    // enable tabs
-    $('.nav-tabs').children('li.disabled').each(function(i, el) {
-      $(el).toggleClass('disabled');
-      $(el).children('a').attr('data-toggle', 'tab');
-      $(el).children('a').attr('href', "#tab-" + $(el).attr('data-name'));
-    });
-
-    // add name
-    $('#input-name').val(this.params['name']);
+  loadData: function(params, dataset) {
+    console.log('Loading params and dataset');
+    this.params = params;
+    this.dataset = dataset;
+    this.model.init(this.dataset);
+    this.initView();
   },
 
   saveDataToStorage: function() {
     console.log('Saving: data');
     this.params['name'] = $('#input-name').val();
-    $.jStorage.set('abcd', this.params);
+    $.jStorage.set('params', this.params);
+    $.jStorage.set('dataset', this.dataset);
   },
 
   clearStorage: function() {
-    console.log('Saving: data');
+    console.log('Clearing storage');
     $.jStorage.flush();
     location.reload();
   },
 
-  computeAll: function() {
-    this.computePET();
-    this.computeSnow();
-  },
-
-  computePET: function() {
-    // compute derived variables
-    var latitude = this.params['latitude'];
-    this.params['input'].forEach(function(d) {
-      d.Solar_in = computeSolar(latitude, d.Jday);
-      d.PET_in = computePET(d.Trng_degC, d.Tavg_degC, d.Solar_in);
-    });
-    this.renderGroup('pet');
-  },
-
-  computeSnow: function() {
-    var Tb = this.params['Tb'],
-        e = this.params['e'],
-        A0 = this.params['A0'];
-
-    var Snow_in, Snowmelt_in, Snowfall_in, Rainfall_in, EPrecip_in;
-    this.params['input'].forEach(function(d, i) {
-      if (i === 0) {
-        Snow_in = A0;
-      } else {
-        Snow_in = computeSnowDepth(Snow_in, Snowmelt_in, Snowfall_in);
-      }
-      
-      Rainfall_in = computeRainfall(Tb, d.Tavg_degC, d.Precip_in);
-      Snowfall_in = computeSnowfall(Tb, d.Tavg_degC, d.Precip_in);
-      Snowmelt_in = computeSnowMelt(Snow_in, d.Tavg_degC, Tb, e);
-      EPrecip_in = computeEffectivePrecip(Rainfall_in, Snowmelt_in);
-
-      d.Rainfall_in = Rainfall_in;
-      d.Snowfall_in = Snowfall_in;
-      d.Snow_in = Snow_in;
-      d.Snowmelt_in = Snowmelt_in;
-      d.EPrecip_in = EPrecip_in;
-    });
-
-    this.renderGroup('snow');
+  compute: function() {
+    // console.log('Computing model');
+    this.model.run(this.params);
   },
 
   renderAll: function() {
@@ -582,10 +557,17 @@ var App = {
   },
 
   renderGroup: function(group) {
+    // console.log('Rendering: ', group);
     var data = this.params['input'];
     this.charts.forEach(function(d) {
       if (d['group'] === group) {
-        d3.select(d['el']).call(d['chart'].data(data));
+        // d3.select(d['el']).call(d['chart'].data(data));
+        // console.log('Updating chart: ', d['key']);
+        if (d['chart'].update) {
+          d['chart'].update();
+        } else {
+          d3.select(d['el']).call(d['chart']);
+        }
       }
     });
   }
@@ -594,6 +576,93 @@ var App = {
 $(function() {
   App.init();
 });
+
+function createModel() {
+  // input contains array of objects [{Date, Precip_in, Flow_in, Tmin_degC, Tmax_degC}]
+  var output,
+      len;
+
+  var init = function(input) {
+    output = [];
+    len = input.length;
+
+    for (var i = 0; i < len; i++) {
+      output.push(input[i]);
+    }
+  };
+
+  var Solar = function(latitude, Jday) {
+    // section 4.4.2 of Handbook of Hydrology, Maidment
+    // good for latitudes of -55 to +55
+    var latitudeRadians = latitude/180*Math.PI,
+        r = 1 + 0.033*Math.cos(2*Math.PI*Jday/365),
+        delta = 0.4093*Math.sin((2*Math.PI*Jday/365) - 1.405),
+        omega = Math.acos(-Math.tan(latitudeRadians)*Math.tan(delta)),
+        daylight = 24*omega/Math.PI,
+        S0_mm = 15.392*r*(Math.sin(latitudeRadians)*omega*Math.sin(delta) + Math.cos(latitudeRadians)*Math.cos(delta)*Math.sin(omega)),
+        S0_in = S0_mm*0.03937;
+    
+    return S0_in;
+  };
+
+  var PET = function(Trng_degC, Tavg_degC, Solar_in) {
+    // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C 
+    return Trng_degC > 0 ? 0.023*Solar_in*(Tavg_degC+17.8)*Math.sqrt(Trng_degC) : 0;
+  };
+
+  var Snowmelt = function(Tb, e, Snow_in, Tavg_degC) {
+    return Tavg_degC > Tb ? Math.min(Snow_in, e*(Tavg_degC - Tb)) : 0;
+  };
+
+  var Rainfall = function(Tb, Tavg_degC, Precip_in) {
+    return Tavg_degC > Tb ? Precip_in : 0;
+  };
+
+  var Snowfall = function(Tb, Tavg_degC, Precip_in) {
+    return Tavg_degC <= Tb ? Precip_in : 0;
+  };
+
+  var Snow = function(Snow_in, Snowmelt_in, Snowfall_in) {
+    return Math.max(Snow_in - Snowmelt_in + Snowfall_in, 0);
+  };
+
+  var EffectivePrecip = function(Rainfall_in, Snowmelt_in) {
+    return Rainfall_in + Snowmelt_in;
+  };
+
+  var run = function(params) {
+    var latitude = params['latitude'],
+        A0 = params['A0'],
+        Tb = params['Tb'],
+        e = params['e'];
+
+    var Snow_in, Snowmelt_in; // previous time step
+
+    for (var i = 0; i < len; i++) {
+      output[i]['Solar_in'] = Solar(latitude, output[i]['Jday']);
+      output[i]['PET_in'] = PET(output[i]['Trng_degC'], output[i]['Tavg_degC'], output[i]['Solar_in']);
+
+      output[i]['Rainfall_in'] = Rainfall(Tb, output[i]['Tavg_degC'], output[i]['Precip_in']);
+      output[i]['Snowfall_in'] = Snowfall(Tb, output[i]['Tavg_degC'], output[i]['Precip_in']);
+
+      if (i==0) {
+        Snow_in = A0;
+      } else {
+        Snow_in = Snow(Snow_in, output[i-1]['Snowmelt_in'], output[i]['Snowfall_in']);
+      }
+
+      output[i]['Snowmelt_in'] = Snowmelt(Tb, e, Snow_in, output[i]['Tavg_degC']);
+      output[i]['Snow_in'] = Snow_in;
+      output[i]['EPrecip_in'] = EffectivePrecip(output[i]['Rainfall_in'], output[i]['Snowmelt_in']); 
+    }
+  };
+
+  return {
+    init: init,
+    run: run,
+    output: function() { return output; }
+  };
+}
 
 
 function showShed() {
@@ -630,33 +699,8 @@ function showInput() {
   }
 }
 
-function loadInput() {
-  console.log('Loading: input');
-  var dataset = $.jStorage.get('input');
-  if (dataset === null) {
-    console.log('Warning: input dataset not found in local storage');
-    return null;
-  } else {
-    dataset.forEach(function(d) {
-      d.Date = new Date(d.Date);
-    });
-    return dataset;
-  }
-}
-
-function loadShed() {
-  console.log('Loading: shed');
-  var dataset = $.jStorage.get('shed');
-  if (dataset === null) {
-    console.log('Warning: shed dataset not found in local storage');
-    return null;
-  } else {
-    return dataset;
-  }
-}
-
 function checkDates(dates) {
-  // dates: array of Date objects
+  // check array of Date objects to ensure sorted, continuous, daily frequency
   var startDate = dates[0],
       endDate = dates[dates.length-1],
       expectedDates = d3.time.days(startDate, d3.time.day.offset(endDate, 1));
@@ -684,44 +728,7 @@ function checkDates(dates) {
   return true;
 }
 
-function computeSolar(latitude, Jday) {
-  // section 4.4.2 of Handbook of Hydrology, Maidment
-  // good for latitudes of -55 to +55
-  var latitudeRadians = latitude/180*Math.PI,
-      r = 1 + 0.033*Math.cos(2*Math.PI*Jday/365),
-      delta = 0.4093*Math.sin((2*Math.PI*Jday/365) - 1.405),
-      omega = Math.acos(-Math.tan(latitudeRadians)*Math.tan(delta)),
-      daylight = 24*omega/Math.PI,
-      S0_mm = 15.392*r*(Math.sin(latitudeRadians)*omega*Math.sin(delta) + Math.cos(latitudeRadians)*Math.cos(delta)*Math.sin(omega)),
-      S0_in = S0_mm*0.03937;
-  
-  return S0_in;
-}
 
-function computePET(Trng_degC, Tavg_degC, Solar_in) {
-  // Compute PET from watershed latitude and input data containing Date, Tmin_C, Tmax_C 
-  return Trng_degC > 0 ? 0.023*Solar_in*(Tavg_degC+17.8)*Math.sqrt(Trng_degC) : 0;
-}
-
-function computeSnowMelt(Snow_in, Tavg_degC, Tb, e) {
-  return Tavg_degC > Tb ? Math.min(Snow_in, e*(Tavg_degC - Tb)) : 0;
-}
-
-function computeRainfall(Tb, Tavg_degC, Precip_in) {
-  return Tavg_degC > Tb ? Precip_in : 0;
-}
-
-function computeSnowfall(Tb, Tavg_degC, Precip_in) {
-  return Tavg_degC > Tb ? 0 : Precip_in;
-}
-
-function computeSnowDepth(Snow_in, Snowmelt_in, Snowfall_in) {
-  return Math.max(Snow_in - Snowmelt_in + Snowfall_in, 0);
-}
-
-function computeEffectivePrecip(Rainfall_in, Snowmelt_in) {
-  return Rainfall_in + Snowmelt_in;
-}
 
 function loadCsvFromString(stringData) {
   console.log('Loading: from CSV');
@@ -730,8 +737,6 @@ function loadCsvFromString(stringData) {
     'Precip_in': function(v) { return +v; }, 
     'Tmin_degC': function(v) { return +v; }, 
     'Tmax_degC': function(v) { return +v; },
-    'PET_in': function(v) { return +v; },
-    'Flow_cfs': function(v) { return +v; },
     'Flow_in': function(v) { return +v; }
   };
 

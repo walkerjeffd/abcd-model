@@ -17,6 +17,10 @@ freezer = Freezer(app)
 def index():
     return render_template('index.html')
 
+@app.route('/bb.html')
+def bb():
+    return render_template('bb.html')
+
 @app.route('/theory.html')
 def theory():
     return render_template('theory.html')

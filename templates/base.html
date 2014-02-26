@@ -1,71 +1,68 @@
 {% set navigation_bar = [
     ('/', 'index', 'Home'),
     ('/theory.html', 'theory', 'Theory'),
-    ('/datasets.html', 'datasets', 'Datasets'),
+    ('/data.html', 'data', 'Data'),
     ('/simulation.html', 'simulation', 'Simulation'),
     ('/calibration.html', 'calibration', 'Calibration'),
     ('/montecarlo.html', 'montecarlo', 'Monte Carlo')
 ] -%}
 {% set active_page = active_page|default('index') -%}
-<!doctype html>
-<html lang="en">
-<head>
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
   {% block head %}
-  <meta charset="UTF-8">
-  <title>{% block title %}Base Template{% endblock %} | ABCD Model</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="ABCD Model">
-  <meta name="author" content="Jeffrey D. Walker">
- 
-  <link href="{{ url_for('static', filename='css/bootstrap.css') }}" rel="stylesheet">
-  <style>
-    body {
-      padding-top: 60px;
-    }
-    .footer {
-      text-align: center;
-    }
-  </style>
-  <style type="text/css">
-    {% block style %}
-    body { padding-top: 60px; padding-bottom: 40px; }
-    {% endblock %}
-  </style>
-  <link href="{{ url_for('static', filename='css/bootstrap-responsive.css') }}" rel="stylesheet">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>{% block title %}Base Template{% endblock %} | ABCD Model</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ABCD Model">
+    <meta name="author" content="Jeffrey D. Walker">
 
-  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-  <!--[if lt IE 9]>
-    <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-  <![endif]-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
+    <style>
+      {% block style %}
+      {% endblock %}
+    </style>
+
+    <script src="{{ url_for('static', filename='js/libs/modernizr.min.js') }}"></script>
+    <script data-main="{{ url_for('static', filename='js/main') }}" src="{{ url_for('static', filename='js/libs/require.min.js') }}"></script>
+    <script>var currentPage = "{{ active_page }}";</script>
   {% endblock %}
+  </head>
 </head>
 <body>
-  <div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
+  <!--[if lt IE 7]>
+    <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+  <![endif]-->
+  <div class="navbar navbar-default">
     <div class="container">
-      <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      <span class="icon-bar"></span>
-      </button>
-      <a class="brand" href="/">ABCD Model</a>
-      <div class="nav-collapse collapse">
-      <ul class="nav">
-        {% for href, id, caption in navigation_bar %}
-          <li{% if id == active_page %} class="active"{% endif
-          %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
-        {% endfor %}
+      <a class="navbar-brand" href="/">ABCD Model</a>          
+      <ul class="nav navbar-nav">
+      {% for href, id, caption in navigation_bar %}
+        <li{% if id == active_page %} class="active"{% endif
+        %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
+      {% endfor %}
       </ul>
-      </div>
-    </div>
+      <p class="navbar-text pull-right" id="status">Initializing...</p>
     </div>
   </div>
 
   <div class="container">
-    {% block content %}
-    {% endblock %}
-
+    <div id="page-view">
+      <div class="alert-messages">
+        <div class="alert" id="alert" style="display: none;">
+          <div id="message"></div>
+        </div>
+      </div>
+      {% block content %}
+      {% endblock %}
+    </div>
     <div class="footer">
       {% block footer %}
       <hr>
@@ -74,24 +71,10 @@
     </div>
   </div>
 
-<script src="{{ url_for('static', filename='js/underscore.js') }}"></script>
-<script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+{% block modals %}
+{% endblock %}
 
 {% block scripts %}
 {% endblock %}
-
-<script type="text/javascript">
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-20715617-4']);
-  _gaq.push(['_setDomainName', 'walkerjeff.com']);
-  _gaq.push(['_trackPageview']);
-
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
-</script>
 </body>
 </html>

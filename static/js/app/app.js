@@ -1,28 +1,31 @@
 define([
+    'bootstrap',
     'app/models/app',
-    'app/views/app',
-    'app/routers/router'
-], function (AppModel, AppView, Router) {
+    'app/views/app'
+], function (Bootstrap, AppModel, AppView) {
     'use strict';
 
-    var initialize = function() {
+    var initialize = function(page) {
         console.log('App initialized');
         var appModel = new AppModel({id: 1});
+
+        if (page != "index") {
+            var appView = new AppView({model: appModel, el: $('body'), page: page});
+
+            appModel.fetch({
+                error: function(model, response, options) {
+                    model.save();
+                }
+            });
+        }
         
-        var appView = new AppView({model: appModel});
-        $('body').append(appView.render().el);
-
-        var router = new Router(appView);
-        Backbone.history.start();
-
-        appModel.fetch();
-
         window.debug = {
-            settings: appModel
+            app: appModel,
+            view: appView
         }
     };
 
     return {
-        initialize: initialize,
+        initialize: initialize
     }
 });

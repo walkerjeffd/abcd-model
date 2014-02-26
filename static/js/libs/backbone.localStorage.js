@@ -36,7 +36,8 @@ function guid() {
 
 function contains(array, item) {
   var i = array.length;
-  while (i--) if (array[i] === obj) return true;
+  // JDW: changed obj to item
+  while (i--) if (array[i] === item) return true;
   return false;
 }
 
@@ -48,6 +49,7 @@ function extend(obj, props) {
 // Our Store is represented by a single JS object in *localStorage*. Create it
 // with a meaningful name, like the name you'd give a table.
 // window.Store is deprectated, use Backbone.LocalStorage instead
+
 Backbone.LocalStorage = window.Store = function(name, serializer) {
   if( !this.localStorage ) {
     throw "Backbone.localStorage: Environment does not support localStorage."
@@ -88,12 +90,16 @@ extend(Backbone.LocalStorage.prototype, {
 
   // Update a model by replacing its copy in `this.data`.
   update: function(model) {
+
     this.localStorage().setItem(this.name+"-"+model.id, this.serializer.serialize(model));
+
     var modelId = model.id.toString();
+
     if (!contains(this.records, modelId)) {
       this.records.push(modelId);
       this.save();
     }
+
     return this.find(model);
   },
 
@@ -169,7 +175,6 @@ Backbone.LocalStorage.sync = window.Store.sync = Backbone.localSync = function(m
   var syncDfd = Backbone.$ ?
     (Backbone.$.Deferred && Backbone.$.Deferred()) :
     (Backbone.Deferred && Backbone.Deferred());
-
   try {
 
     switch (method) {

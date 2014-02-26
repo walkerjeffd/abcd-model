@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% set active_page = "data" %}
+
+{% block title %}Data{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-xs-12">
+      
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-3">
+      <h4>Watershed Information</h4>
+      <form class="form-horizontal" role="form">
+        <div class="form-group">
+          <label for="#input-name" class="col-sm-3 control-label">Name:</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="input-name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="#input-latitude" class="col-sm-3 control-label">Latitude:</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="input-latitude">
+          </div>
+        </div>
+      </form>
+      <hr>
+      <div class="text-center">
+        <h4>Input File</h4>
+        <div id="holder">
+          <div style="padding-top: 40px; z-index: -1;">Drop CSV File Here</div>
+        </div>
+        <div id="summary-input"></div>
+      </div>
+      <hr>
+      <div class="text-center">
+        <div class="btn-toolbar">
+          <button class="btn btn-primary" id="btn-save"><span class="glyphicon glyphicon-save"></span> Save</button>
+          <button class="btn btn-danger" data-target="#modal-delete" data-toggle="modal" id="btn-delete-model"><span class="glyphicon glyphicon-trash"></span> Delete</button>
+          <button class="btn btn-success" data-target="#modal-help" data-toggle="modal"><span class="glyphicon glyphicon-question-sign"></span> Help</button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div id="chart-temp"></div>
+      <div id="chart-precip"></div>
+      <div id="chart-flow"></div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block modals %}
+<div class="modal fade" role="dialog" id="modal-delete">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Delete Model?</h3>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete? Saved work will be lost!</p>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-danger" data-dismiss="modal" id="btn-delete">Confirm</a>
+        <a href="#" class="btn btn-primary" data-dismiss="modal">Cancel</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" role="dialog" id="modal-help">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Datasets Help</h3>
+      </div>
+      <div class="modal-body">
+        <h4>Description</h4>
+        <p>On this page, load the input dataset, set the name of your watershed, and configure the computations for Potential Evapotranspiration (PET) and Snowmelt. Once the Save button is clicked, the dataset will be stored in the browser and available for simulation.</p>
+        <hr>
+        <h4>Instructions</h4>
+        <ol>
+          <li>Set name of watershed below "Watershed Information"</li>
+          <li>Drag and drop a CSV file into the drop zone below "Drop Input File"</li>
+          <li>Click "PET" tab, set latitude</li>
+          <li>Click "Snow" tab, set parameters</li>
+          <li>Click "Save" button</li>
+        </ol>
+        <hr>
+        <h4>Input File</h4>
+        <p>The input file must be a standard CSV file with the following columns:</p>
+        <ul>
+          <li><b>Date</b>: string, format YYYY-MM-DD (e.g. "2014-02-20")</li>
+          <li><b>Precip_in</b>: numeric</li>
+          <li><b>Tmin_degC</b>: numeric</li>
+          <li><b>Tmax_degC</b>: numeric</li>
+          <li><b>Flow_in</b>: numeric</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

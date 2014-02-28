@@ -8,6 +8,8 @@ define([
   'app/sim',
   'app/views/soil_theory_chart'
 ], function ($, _, Backbone, d3, Charts, Utils, SimModel, SoilTheoryChart) {
+  'use strict';
+  
   var CalibrationPage = Backbone.View.extend({
     charts: {},
 
@@ -43,7 +45,7 @@ define([
     },
 
     checkInput: function(model, response, options) {
-      var model = model || this.model;
+      model = model || this.model;
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
@@ -74,18 +76,18 @@ define([
 
         var stats = this.computeStats(simModel.output, 'Flow_in', 'Q');
 
-        d3.select("#chart-line").call(this.charts['Line'].data(simModel.output));
-        d3.select("#chart-scatter").call(this.charts['Scatter'].data(simModel.output));
-        // d3.select("#chart-cdf").call(this.charts['CDF'].data(simModel.output));
+        d3.select("#chart-line").call(this.chartsLine.data(simModel.output));
+        d3.select("#chart-scatter").call(this.chartsScatter.data(simModel.output));
+        // d3.select("#chart-cdf").call(this.chartsCDF.data(simModel.output));
 
         this.$("#stat-rmse").text(numberFormat(stats.rmse));
         this.$("#stat-nse").text(numberFormat(stats.nse));
 
         
         if (!this.model.isNew() && this.model.hasChanged()) {
-          this.dispatcher.trigger('status', 'Unsaved changes...')
+          this.dispatcher.trigger('status', 'Unsaved changes...');
         } else {
-          this.dispatcher.trigger('status', 'Ready!')
+          this.dispatcher.trigger('status', 'Ready!');
         }
       }
     },
@@ -93,7 +95,7 @@ define([
     computeStats: function(data, obs, sim) {
       var log10 = function(x) {
         return Math.log(x)*Math.LOG10E;
-      }
+      };
 
       var log_resid2 = data.map(function(d) {
         return Math.pow(log10(d[obs]) - log10(d[sim]), 2);
@@ -108,12 +110,12 @@ define([
       return {
         rmse: Math.sqrt(mse),
         nse: 1 - mse / Utils.variance(log_obs)
-      }
+      };
     },
 
 
     initCharts: function() {
-      this.charts['Line'] = Charts.TimeseriesLineChart()
+      this.charts.Line = Charts.TimeseriesLineChart()
         .x(function(d) { return d.Date; })
         .width(570)
         .height(200)
@@ -123,7 +125,7 @@ define([
         .color(this.colors)
         .yLabel('Observed and Simulated (Red) Streamflow (in/day)');
 
-      this.charts['Scatter'] = Charts.ScatterChart()
+      this.charts.Scatter = Charts.ScatterChart()
         .x(function(d) { return d.Flow_in; })
         .y(function(d) { return d.Q; })
         .width(285)
@@ -138,7 +140,7 @@ define([
         .yLabel('Simulated Streamflow (in/d)')
         .xLabel('Observed Streamflow (in/d)');
 
-      // this.charts['CDF'] = Charts.CDFChart()
+      // this.charts.CDF = Charts.CDFChart()
       //   .width(285)
       //   .height(305)
       //   .yScale(d3.scale.log())

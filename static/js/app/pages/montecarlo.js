@@ -7,6 +7,8 @@ define([
   'app/utils',
   'app/sim'
 ], function ($, _, Backbone, d3, Charts, Utils, SimModel) {
+  'use strict';
+  
   var MonteCarloPage = Backbone.View.extend({
     charts: {},
 
@@ -50,7 +52,7 @@ define([
     },
 
     checkInput: function(model, response, options) {
-      var model = model || this.model;
+      model = model || this.model;
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
@@ -109,9 +111,9 @@ define([
         
         if (!this.isRunning) {
           if (!this.model.isNew() && this.model.hasChanged()) {
-            this.dispatcher.trigger('status', 'Unsaved changes...')
+            this.dispatcher.trigger('status', 'Unsaved changes...');
           } else {
-            this.dispatcher.trigger('status', 'Ready!')
+            this.dispatcher.trigger('status', 'Ready!');
           }  
         }
       }
@@ -134,9 +136,9 @@ define([
         if (that.tracking) {
           return "Tracking On";
         } else {
-          return "Tracking Off"
+          return "Tracking Off";
         }
-      })
+      });
     },
 
     initSliders: function() {
@@ -164,20 +166,20 @@ define([
 
         var stats = this.compute_stats(this.simModel.output, 'Flow_in', 'Q');
 
-        d3.select("#chart-line").call(this.charts['Line'].data(this.simModel.output));
+        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
 
         var currentSim = {
             a: this.model.get('a'),
             b: this.model.get('b'),
             c: this.model.get('c'),
             d: this.model.get('d'),
-            rmse: stats['rmse']
+            rmse: stats.rmse
           };
 
         if (this.tracking && !this.loadingExisting) {
           this.history.push(currentSim);
 
-          if (stats['rmse'] < this.history[this.optimal]['rmse']) {
+          if (stats.rmse < this.history[this.optimal].rmse) {
             this.optimal = this.history.length-1;
           }
         }
@@ -188,19 +190,19 @@ define([
 
         this.optimalParams = this.history.length > 0 ? [this.history[this.optimal]] : [];
         
-        d3.select("#chart-a").call(this.charts['A']
+        d3.select("#chart-a").call(this.charts.A
           .data(this.history)
           .optimal(this.optimalParams)
           .highlight([currentSim]));
-        d3.select("#chart-b").call(this.charts['B']
+        d3.select("#chart-b").call(this.charts.B
           .data(this.history)
           .optimal(this.optimalParams)
           .highlight([currentSim]));
-        d3.select("#chart-c").call(this.charts['C']
+        d3.select("#chart-c").call(this.charts.C
           .data(this.history)
           .optimal(this.optimalParams)
           .highlight([currentSim]));
-        d3.select("#chart-d").call(this.charts['D']
+        d3.select("#chart-d").call(this.charts.D
           .data(this.history)
           .optimal(this.optimalParams)
           .highlight([currentSim]));
@@ -212,9 +214,9 @@ define([
 
       if (!this.isRunning) {
         if (!this.model.isNew() && this.model.hasChanged()) {
-          this.dispatcher.trigger('status', 'Unsaved changes...')
+          this.dispatcher.trigger('status', 'Unsaved changes...');
         } else {
-          this.dispatcher.trigger('status', 'Ready!')
+          this.dispatcher.trigger('status', 'Ready!');
         }  
       }
     },
@@ -222,7 +224,7 @@ define([
     compute_stats: function(data, obs, sim) {
       var log10 = function(x) {
         return Math.log(x)*Math.LOG10E;
-      }
+      };
 
       var log_resid2 = data.map(function(d) {
         return Math.pow(log10(d[obs]) - log10(d[sim]), 2);
@@ -237,7 +239,7 @@ define([
       return {
         rmse: Math.sqrt(mse),
         nse: 1 - mse / Utils.variance(log_obs)
-      }
+      };
     },
 
     loadSimulation: function (params) {
@@ -254,9 +256,9 @@ define([
       var circleClick = function(d, i) {
         console.log(d);
         that.loadSimulation(_.omit(d, 'rmse'));
-      }
+      };
 
-      this.charts['Line'] = Charts.TimeseriesLineChart()
+      this.charts.Line = Charts.TimeseriesLineChart()
           .x(function(d) { return d.Date; })
           .width(800)
           .height(200)
@@ -267,7 +269,7 @@ define([
           .yLabel('Observed (Black), Simulated (Red), and Optimal (blue) Streamflow (in/day)');
 
 
-        this.charts['A'] = Charts.DottyChart()
+        this.charts.A = Charts.DottyChart()
           .x(function(d) { return d.a; })
           .y(function(d) { return d.rmse; })
           .width(200)
@@ -280,7 +282,7 @@ define([
           .yLabel('RMSE')
           .xLabel('Parameter a');
 
-        this.charts['B'] = Charts.DottyChart()
+        this.charts.B = Charts.DottyChart()
           .x(function(d) { return d.b; })
           .y(function(d) { return d.rmse; })
           .width(200)
@@ -293,7 +295,7 @@ define([
           .yLabel('RMSE')
           .xLabel('Parameter b');
 
-        this.charts['C'] = Charts.DottyChart()
+        this.charts.C = Charts.DottyChart()
           .x(function(d) { return d.c; })
           .y(function(d) { return d.rmse; })
           .width(200)
@@ -306,7 +308,7 @@ define([
           .yLabel('RMSE')
           .xLabel('Parameter c');
 
-        this.charts['D'] = Charts.DottyChart()
+        this.charts.D = Charts.DottyChart()
           .x(function(d) { return d.d; })
           .y(function(d) { return d.rmse; })
           .width(200)

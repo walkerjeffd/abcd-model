@@ -1,6 +1,8 @@
 define([
   'd3',
 ], function (d3) {
+  'use strict';
+  
   var TimeseriesAreaChart = function() {
     var svg,
         margin = {top: 20, right: 20, bottom: 30, left: 50},
@@ -90,7 +92,7 @@ define([
         area
           .x(function(d) { return xScale(d.x); })
           .y0(function(d) { return yScale(d.y0); })
-          .y1(function(d) { return yScale(d.y0 + d.y); })
+          .y1(function(d) { return yScale(d.y0 + d.y); });
 
         var yStack = stack(yVariables.map(function(v) {
           return { name: v, values: chartData.map(function(d) {
@@ -298,7 +300,7 @@ define([
     chart.update = function() {
       updateYaxis();
       updateLine();
-    }
+    };
 
     chart.width = function(_) {
       if (!arguments.length) return width;
@@ -373,7 +375,7 @@ define([
     };
 
     return chart;
-  }
+  };
 
   var TimeseriesLineChart = function() {
     var svg,
@@ -549,7 +551,7 @@ define([
     };
 
     return chart;
-  }
+  };
 
   var ComponentChart = function() {
     var margin = {top: 25, bottom: 45, left: 30, right: 80},
@@ -582,11 +584,11 @@ define([
       selection.each(function() {
         funcs.forEach(function(f) {
           f.values = xValues.map(f.func);
-        })
+        });
 
         var yStack = stack(funcs.map(function(f) {
           return { name: f.name, label: f.label, values: d3.zip(xValues, f.values)};
-        }))
+        }));
 
         // console.log(yStack);
 
@@ -679,7 +681,7 @@ define([
 
         labels
           .attr("transform", function(d) { return "translate(" + xScale(d.values[d.values.length-1][0]) + "," + yScale(d.values[d.values.length-1].y0 + d.values[d.values.length-1].y / 2) + ")"; });
-      })
+      });
     }
 
     chart.focus = function(x) {
@@ -718,7 +720,7 @@ define([
           .attr('y1', yScale(y1))
           .attr('y2', yScale(y1));
 
-        hline.exit().remove()
+        hline.exit().remove();
 
         var vline = svg.select('g.focus').selectAll('.vline')
           .data([x]);
@@ -737,7 +739,7 @@ define([
           .attr('y1', yScale(y0))
           .attr('y2', yScale(y1));
 
-        vline.exit().remove()
+        vline.exit().remove();
 
         var circles = svg.select('g.focus').selectAll('circle')
           .data(yStack, function(d) { return d.name; });
@@ -754,7 +756,7 @@ define([
 
         circles.exit().remove();
       }
-    }
+    };
 
     function X(d) {
       return xScale(xValue(d));
@@ -768,62 +770,62 @@ define([
       if (!arguments.length) return width;
       width = _;
       return chart;
-    }
+    };
 
     chart.height = function(_) {
       if (!arguments.length) return height;
       height = _;
       return chart;
-    }
+    };
 
     chart.x = function(_) {
       if (!arguments.length) return xValue;
       xValue = _;
       return chart;
-    }
+    };
 
     chart.y = function(_) {
       if (!arguments.length) return yValue;
       yValue = _;
       return chart;
-    }
+    };
 
     chart.xDomain = function(_) {
       if (!arguments.length) return xDomain;
       xDomain = _;
       xValues = d3.range(xDomain[0], xDomain[1]+0.1, 0.1);
       return chart;
-    }
+    };
 
     chart.yDomain = function(_) {
       if (!arguments.length) return yDomain;
       yDomain = _;
       return chart;
-    }
+    };
 
     chart.xLabel = function(_) {
       if (!arguments.length) return xLabel;
       xLabel = _;
       return chart;
-    }
+    };
 
     chart.yLabel = function(_) {
       if (!arguments.length) return yLabel;
       yLabel = _;
       return chart;
-    }
+    };
 
     chart.colors = function(_) {
       if (!arguments.length) return colors;
       colors = _;
       return chart;
-    }
+    };
 
     chart.funcs = function(_) {
       if (!arguments.length) return funcs;
       funcs = _;
       return chart;
-    }
+    };
 
       return chart;
   };
@@ -1215,7 +1217,7 @@ define([
       return chart;
     };
     return chart;
-  }
+  };
 
   var DottyChart = function() {
     var margin = {top: 20, right: 23, bottom: 56, left: 53},
@@ -1248,10 +1250,11 @@ define([
 
         var mergeData = d3.merge([chartData, highlight, optimal]);
 
+        var yExtent;
         if (mergeData.length == 1) {
-          var yExtent = [d3.round(yValue(mergeData[0]), 1)-0.1, d3.round(yValue(mergeData[0]), 1)+0.1];
+          yExtent = [d3.round(yValue(mergeData[0]), 1)-0.1, d3.round(yValue(mergeData[0]), 1)+0.1];
         } else {
-          var yExtent = d3.extent(mergeData, function(d) { return yValue(d); });  
+          yExtent = d3.extent(mergeData, function(d) { return yValue(d); });  
         }
         
         yScale
@@ -1302,8 +1305,8 @@ define([
               .attr("dx", "-.8em")
               .attr("dy", "-.5em")
               .attr("transform", function(d) {
-                  return "rotate(-90)" 
-                  });;
+                  return "rotate(-90)";
+                  });
 
         g.select('.y.axis')
             .call(yAxis);
@@ -1472,7 +1475,7 @@ define([
     };
 
     return chart;
-  }
+  };
 
   return {
     TimeseriesAreaChart: TimeseriesAreaChart,
@@ -1483,5 +1486,5 @@ define([
     CDFChart: CDFChart,
     DottyChart: DottyChart
   };
-})
+});
 

@@ -7,10 +7,12 @@ define([
 
     var initialize = function(page) {
         console.log('App initialized');
+
         var appModel = new AppModel({id: 1});
+        var appView;
 
         if (page != "index") {
-            var appView = new AppView({model: appModel, el: $('body'), page: page});
+            appView = new AppView({model: appModel, el: $('body'), page: page});
 
             appModel.fetch({
                 error: function(model, response, options) {
@@ -22,10 +24,10 @@ define([
         window.debug = {
             app: appModel,
             view: appView
-        }
+        };
     };
 
     return {
         initialize: initialize
-    }
+    };
 });

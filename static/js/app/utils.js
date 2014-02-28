@@ -1,7 +1,8 @@
 define([
     'underscore'
 ], function (_) {
-  
+    'use strict';
+    
     var checkDates = function(dates) {
       // check array of Date objects to ensure sorted, continuous, daily frequency
       var startDate = dates[0],

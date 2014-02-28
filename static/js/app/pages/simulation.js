@@ -10,6 +10,8 @@ define([
   'app/views/soil_theory_chart',
   'app/views/diagram'
 ], function ($, _, Backbone, Bootstrap, d3, Charts, Utils, SimModel, SoilTheoryChart, Diagram) {
+  'use strict';
+
   var SimulationPage = Backbone.View.extend({
     charts: {},
 
@@ -42,7 +44,7 @@ define([
     },
 
     checkInput: function(model, response, options) {
-      var model = model || this.model;
+      model = model || this.model;
 
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
@@ -71,20 +73,20 @@ define([
       if (this.model.get('input') && this.model.get('input').length) {
         var simModel = SimModel(this.model.get('input'));
         simModel.run(this.model);
-        d3.select('#chart-flow').call(this.charts['Flow'].data(simModel.output));
-        d3.select('#chart-storage').call(this.charts['Storage'].data(simModel.output));
+        d3.select('#chart-flow').call(this.charts.Flow.data(simModel.output));
+        d3.select('#chart-storage').call(this.charts.Storage.data(simModel.output));
       }
 
       if (!this.model.isNew() && this.model.hasChanged()) {
-        this.dispatcher.trigger('status', 'Unsaved changes...')
+        this.dispatcher.trigger('status', 'Unsaved changes...');
       } else {
-        this.dispatcher.trigger('status', 'Ready!')
+        this.dispatcher.trigger('status', 'Ready!');
       }
 
     },
 
     initCharts: function() {
-      this.charts['Flow'] = Charts.Timeseries()
+      this.charts.Flow = Charts.Timeseries()
         .x(function(d) { return d.Date; })
         .width(550)
         .height(200)
@@ -94,7 +96,7 @@ define([
         .yScale(d3.scale.log())
         .color(this.model.colors);
 
-      this.charts['Storage'] = Charts.TimeseriesAreaChart()
+      this.charts.Storage = Charts.TimeseriesAreaChart()
         .x(function(d) { return d.Date; })
         .width(550)
         .height(200)

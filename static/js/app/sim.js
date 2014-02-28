@@ -1,15 +1,15 @@
 define([
-
 ], function () {
   var SimModel = function(input) {
-    var output;
+    'use strict';
 
-    output =  [];
+    var output =  [];
+    
     for (var i = 0, len = input.length; i < len; i++) {
       output.push({
-        Date: input[i]['Date'],
-        Precip_in: input[i]['Precip_in'],
-        Flow_in: input[i]['Flow_in'],
+        Date: input[i].Date,
+        Precip_in: input[i].Precip_in,
+        Flow_in: input[i].Flow_in,
         W: 0.0,
         S: 0.0,
         G: 0.0,
@@ -41,15 +41,15 @@ define([
           S = params.get('S0');
           G = params.get('G0');
         } else {
-          At = Math.max((input[i]['Tavg_degC'] > Tb ? At - mt : At - mt + input[i]['Precip_in']), 0);
+          At = Math.max((input[i].Tavg_degC > Tb ? At - mt : At - mt + input[i].Precip_in), 0);
         }
 
-        mt = input[i]['Tavg_degC'] > Tb ? Math.min(At, e*(input[i]['Tavg_degC'] - Tb)) : 0;
-        Pe = input[i]['Tavg_degC'] < Tb ? 0 : input[i]['Precip_in'] + mt;
+        mt = input[i].Tavg_degC > Tb ? Math.min(At, e*(input[i].Tavg_degC - Tb)) : 0;
+        Pe = input[i].Tavg_degC < Tb ? 0 : input[i].Precip_in + mt;
 
         W = S + Pe;
         Y = (W + b)/(2 * a) - Math.sqrt(Math.pow((W + b)/(2 * a),2) - (W * b / a));
-        S = Y * Math.exp(-input[i]['PET_in'] / b);
+        S = Y * Math.exp(-input[i].PET_in / b);
         GR = c * (W - Y);
         DR = Math.max((1 - c) * (W - Y), 0.001);
 
@@ -58,18 +58,18 @@ define([
         ET = Y - S;
         Q = Math.max(DR + dG, 0.001);
 
-        output[i]['W'] = W,
-        output[i]['S'] = S,
-        output[i]['G'] = G,
-        output[i]['Y'] = Y,
-        output[i]['GR'] = GR,
-        output[i]['DR'] = DR,
-        output[i]['dG'] = dG,
-        output[i]['ET'] = ET,
-        output[i]['At'] = At,
-        output[i]['mt'] = mt,
-        output[i]['Pe'] = Pe,
-        output[i]['Q'] = Q
+        output[i].W = W;
+        output[i].S = S;
+        output[i].G = G;
+        output[i].Y = Y;
+        output[i].GR = GR;
+        output[i].DR = DR;
+        output[i].dG = dG;
+        output[i].ET = ET;
+        output[i].At = At;
+        output[i].mt = mt;
+        output[i].Pe = Pe;
+        output[i].Q = Q;
       }
     };
     
@@ -81,5 +81,4 @@ define([
   };
 
   return SimModel;
-})
-
+});

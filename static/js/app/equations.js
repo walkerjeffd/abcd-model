@@ -1,6 +1,7 @@
 define([
-
 ], function () {
+  'use strict';
+
   var Equations = function(params) {
     var Y = function(W) {
       return (W+params.get('b'))/(2*params.get('a')) - Math.sqrt(Math.pow((W+params.get('b'))/(2*params.get('a')),2) - (W*params.get('b')/params.get('a')));  
@@ -39,6 +40,6 @@ define([
       Qdischarge: Qdischarge,
       G: G
     };
-  }
+  };
   return Equations;
 });

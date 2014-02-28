@@ -6,6 +6,8 @@ define([
   'app/charts',
   'app/utils'
 ], function ($, _, Backbone, d3, Charts, Utils) {
+  'use strict';
+
   var DataPage = Backbone.View.extend({
     charts: {},
 
@@ -72,7 +74,7 @@ define([
       $drop.on('drop', function (e) {
         console.log('Event: file dropped on holder');
         that.dispatcher.trigger('status', 'Loading file...');
-        $(this).removeClass('hover')
+        $(this).removeClass('hover');
         e.preventDefault();
 
         var file = e.originalEvent.dataTransfer.files[0],
@@ -162,9 +164,9 @@ define([
       // sort dates
       console.log('Sorting data by Date');
       data.sort(function (a, b) {
-        if (a['Date'] < b['Date'])
+        if (a.Date < b.Date)
           return -1;
-        if (a['Date'] > b['Date'])
+        if (a.Date > b.Date)
           return 1;
         return 0;
       });
@@ -194,21 +196,21 @@ define([
 
       if (this.model.get('input') && this.model.get('input').length) {
         console.log('Showing charts');
-        d3.select('#chart-temp').call(this.charts['Temp'].data(this.model.get('input')));
-        d3.select('#chart-precip').call(this.charts['Precip'].data(this.model.get('input')));
-        d3.select('#chart-flow').call(this.charts['Flow'].data(this.model.get('input')));
-        d3.select('#chart-pet').call(this.charts['PET'].data(this.model.get('input')));
+        d3.select('#chart-temp').call(this.charts.Temp.data(this.model.get('input')));
+        d3.select('#chart-precip').call(this.charts.Precip.data(this.model.get('input')));
+        d3.select('#chart-flow').call(this.charts.Flow.data(this.model.get('input')));
+        d3.select('#chart-pet').call(this.charts.PET.data(this.model.get('input')));
       }
 
       if (!this.model.isNew() && this.model.hasChanged()) {
-        this.dispatcher.trigger('status', 'Unsaved changes...')
+        this.dispatcher.trigger('status', 'Unsaved changes...');
       } else {
-        this.dispatcher.trigger('status', 'Ready!')
+        this.dispatcher.trigger('status', 'Ready!');
       }
     },
 
     initCharts: function() {
-      this.charts['Temp'] = Charts.TimeseriesLineChart()
+      this.charts.Temp = Charts.TimeseriesLineChart()
           .x(function(d) { return d.Date; })
           .width(550)
           .height(150)
@@ -216,7 +218,7 @@ define([
           .yLabel('Min/Max Air Temperature (deg C)')
           .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
-      this.charts['Precip'] = Charts.Timeseries()
+      this.charts.Precip = Charts.Timeseries()
           .xVariable('Date')
           .yVariable('Precip_in')
           .width(550)
@@ -224,7 +226,7 @@ define([
           .yLabel('Precipitation (in/d)')
           .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
-      this.charts['Flow'] = Charts.Timeseries()
+      this.charts.Flow = Charts.Timeseries()
           .xVariable('Date')
           .yVariable('Flow_in')
           .width(550)
@@ -232,7 +234,7 @@ define([
           .yLabel('Observed Flow (in/d)')
           .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
-      this.charts['PET'] = Charts.Timeseries()
+      this.charts.PET = Charts.Timeseries()
           .xVariable('Date')
           .yVariable('PET_in')
           .width(550)

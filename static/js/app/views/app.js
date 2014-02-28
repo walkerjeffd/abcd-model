@@ -41,7 +41,7 @@ define([
 
                 this.listenTo(this.model, 'all', function(event, model, response, options) {
                   console.log('AppModel Event:', event, '|', response);
-                })
+                });
             }
 
             this.listenTo(this.model, 'sync', function(model) {

@@ -39,7 +39,7 @@ define([
                 return 'Latitude must be between 20 and 50 degrees North';
             }
            
-            if (!(attrs.input.length > 0)) {
+            if (attrs.input.length === 0) {
                 return 'Input data is missing';
             }
         },
@@ -64,18 +64,16 @@ define([
             // convert to Date
             if (response.input) {
                 _.each(response.input, function(d) {
-                    d['Date'] = new Date(d['Date']);
+                    d.Date = new Date(d.Date);
                 });
             }
             return response;
         },
 
         computePET: function(latitude, data) {
-            
-
             for (var i = 0, len = data.length; i < len; i++) {
-                data[i]['Solar_in'] = Utils.solarRadiation(latitude, data[i]['Jday']);
-                data[i]['PET_in'] = Utils.Hargreaves(data[i]['Solar_in'], data[i]['Trng_degC'], data[i]['Tavg_degC']);
+                data[i].Solar_in = Utils.solarRadiation(latitude, data[i].Jday);
+                data[i].PET_in = Utils.Hargreaves(data[i].Solar_in, data[i].Trng_degC, data[i].Tavg_degC);
             }
         },
 

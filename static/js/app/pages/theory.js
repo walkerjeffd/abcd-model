@@ -8,6 +8,8 @@ define([
   'app/views/gw_theory_chart',
   'app/views/diagram'
 ], function ($, Backbone, d3, Charts, Equations, SoilTheoryChart, GwTheoryChart, Diagram) {
+  'use strict';
+
   var TheoryPage = Backbone.View.extend({
     charts: {},
 

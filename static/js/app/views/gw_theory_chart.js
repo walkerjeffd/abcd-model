@@ -5,6 +5,8 @@ define([
   'app/charts',
   'app/equations'
 ], function ($, Backbone, d3, Charts, Equations) {
+  'use strict';
+  
   var GwTheoryChart = Backbone.View.extend({
     initialize: function(options) {
       console.log('Initialize: GwTheoryChart');
@@ -21,8 +23,8 @@ define([
         .width(width)
         .height(height)
         .funcs([
-          {label: 'Groundwater', name: 'G', func: this.equations['G']},
-          {label: 'Discharge', name: 'Qdischarge', func: this.equations['Qdischarge']}
+          {label: 'Groundwater', name: 'G', func: this.equations.G },
+          {label: 'Discharge', name: 'Qdischarge', func: this.equations.Qdischarge }
         ])
         .colors(this.colors)
         .xLabel('Groundwater[t-1] + Qrecharge[t]')

@@ -5,6 +5,8 @@ define([
   'app/charts',
   'app/equations'
 ], function ($, Backbone, d3, Charts, Equations) {
+  'use strict';
+
   var SoilTheoryChart = Backbone.View.extend({
     initialize: function(options) {
       console.log('Initialize: SoilTheoryChart');
@@ -15,16 +17,16 @@ define([
       
       this.colors = this.model.colors;
       
-      this.equations = Equations(this.model);
+      this.equations = new Equations(this.model);
 
       this.chart = Charts.ComponentChart()
         .width(width)
         .height(height)
         .funcs([
-          {label: 'Soil Moisture', name: 'S', func: this.equations['S']},
-          {label: 'ET', name: 'ET', func: this.equations['ET']},
-          {label: 'Runoff', name: 'Qrunoff', func: this.equations['Qrunoff']},
-          {label: 'Recharge', name: 'Qrecharge', func: this.equations['Qrecharge']}
+          {label: 'Soil Moisture', name: 'S', func: this.equations.S },
+          {label: 'ET', name: 'ET', func: this.equations.ET },
+          {label: 'Runoff', name: 'Qrunoff', func: this.equations.Qrunoff },
+          {label: 'Recharge', name: 'Qrecharge', func: this.equations.Qrecharge }
         ])
         .colors(this.colors)
         .xLabel('Soil Moisture[t-1] + Precip[t]')

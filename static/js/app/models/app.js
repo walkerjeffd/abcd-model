@@ -46,12 +46,12 @@ define([
 
         localStorage: new Backbone.LocalStorage('AppSettings'),
 
-        initialize: function () {
+        initialize: function (options) {
             console.log('AppModel: initialize');
             this.isNewModel = true;
             this.colors = d3.scale.ordinal()
-                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "#ff9896", "#9467bd", "#c5b0d5", "#8c564b", "#c49c94", "#e377c2", "#f7b6d2", "#7f7f7f", "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"])
-                .domain(['P', 'S', 'ET', 'Qrecharge', 'Qrunoff', 'G', 'Qdischarge', 'Q']);
+                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black"])
+                .domain(['P', 'S', 'ET', 'Qrecharge', 'Qrunoff', 'G', 'Qdischarge', 'Q', 'Flow_in']);
         },
 
         isNew: function () {

@@ -25,8 +25,8 @@ define([
         initialize: function (options) {
             console.log('AppView: initialize');
             var page = options.page;
+            this.dispatcher = options.dispatcher;
             
-            this.dispatcher = _.extend({}, Backbone.Events);
             this.$alert = this.$('#alert');
             this.$status = this.$('#status');
             this.dispatcher.on('alert', this.showAlert, this);

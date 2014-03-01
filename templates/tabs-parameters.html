@@ -1,0 +1,41 @@
+      <ul class="nav nav-tabs">
+        <li class="active"><a href="#tab-soil" data-toggle="tab">Soil</a></li>
+        <li><a href="#tab-gw" data-toggle="tab">Groundwater</a></li>
+        <li><a href="#tab-snow" data-toggle="tab">Snow</a></li>
+      </ul>
+      <div class="tab-content">
+        <div class="tab-pane tab-param active" id="tab-soil">
+          <dl>
+            <dt>Initial Soil Moisture: <span id="param-S0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="S0"/></dd>
+
+            <dt>a: <span id="param-a"></span></dt>
+            <dd><input class="slider" type="range" min="0.98" max="1" step="0.0001" value="1" name="a" /></dd>
+
+            <dt>b: <span id="param-b"></span></dt>
+            <dd><input class="slider" type="range" min="1" max="10" step="0.1" value="5" name="b" /></dd>
+
+            <dt>c: <span id="param-c"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="1" step="0.01" value="0.5" name="c" /></dd>
+          </dl>
+          <div id="chart-soil"></div>
+        </div>
+        <div class="tab-pane tab-param" id="tab-gw">
+          <dl>
+            <dt>Initial Groundwater: <span id="param-G0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="G0"/></dd>
+
+            <dt>d: <span id="param-d"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="0.2" step="0.001" value="0.1" name="d"/></dd>
+          </dl>
+          <div id="chart-gw"></div>
+        </div><div class="tab-pane tab-param" id="tab-snow">
+          <dl>
+            <dt>Initial Snow Depth: <span id="param-A0"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="1" name="A0"/></dd>
+
+            <dt>Melt Factor: <span id="param-e"></span></dt>
+            <dd><input class="slider" type="range" min="0" max="2" step="0.01" value="0.1" name="e"/></dd>
+          </dl>
+        </div>
+      </div>

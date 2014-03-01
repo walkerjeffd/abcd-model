@@ -4,15 +4,15 @@ define([
   'backbone',
   'd3',
   'app/charts',
-  'app/utils'
-], function ($, _, Backbone, d3, Charts, Utils) {
+  'app/utils',
+  'app/views/controls'
+], function ($, _, Backbone, d3, Charts, Utils, ControlsView) {
   'use strict';
 
   var DataPage = Backbone.View.extend({
     charts: {},
 
     events: {
-      'click #btn-save': 'saveApp',
       'keyup #input-name': 'updateName',
       'keyup #input-latitude': 'updateLatitude'
     },
@@ -25,16 +25,14 @@ define([
       this.$name = this.$('#input-name');
       this.$latitude = this.$('#input-latitude');
 
+      this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
       this.initDragDrop(this.$('#holder'));
-
-      this.initCharts();
-
-      $('#btn-delete').on('click', this.deleteApp.bind(this));
+      this.initCharts();      
 
       this.listenTo(this.model, 'change:input', this.render);
       this.listenTo(this.model, 'sync', this.updateModelInfo);
 
-      this.listenTo(this.model, 'invalid', this.invalidAlert);
+      
 
       this.render();
       this.dispatcher.trigger('status', 'Ready!');
@@ -43,10 +41,6 @@ define([
     updateModelInfo: function() {
       this.$name.val(this.model.get('watershedName'));
       this.$latitude.val(this.model.get('latitude'));
-    },
-
-    invalidAlert: function(model, error) {
-      this.dispatcher.trigger('alert', error, 'danger');
     },
 
     updateName: function() {
@@ -105,42 +99,6 @@ define([
       });
     },
 
-    showHelp: function() {
-      this.$help.show();
-    },
-
-    saveApp: function() {
-      console.log('Saving...');
-      var that = this;
-      this.model.save(
-        {
-          watershedName: this.$name.val(),
-          latitude: +this.$latitude.val()
-        }, 
-        {
-          success: function() {
-            that.dispatcher.trigger('alert', 'Model saved', 'success');
-            that.dispatcher.trigger('status', 'Ready!');
-          },
-          error: function(e) {
-            that.dispatcher.trigger('alert', 'Model save failed!', 'error');
-            that.dispatcher.trigger('status', 'Unsaved changes...');
-          }
-      });
-    },
-
-    deleteApp: function() {
-      console.log('Deleting...');
-      this.model.destroy({
-        success: function(model, response, options) {
-          // model.set(model.defaults);
-          window.location.reload();
-        },
-        error: function(model, response, options) {
-          console.log('error: ', response);
-        }
-      });
-    },
 
     loadData: function(data) {
       var dateFormat = d3.time.format('%Y-%m-%d');

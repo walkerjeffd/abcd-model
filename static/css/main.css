@@ -56,6 +56,10 @@ svg {
     padding-bottom: 20px;
   }
 }
+
+.tab-param > dl {
+  margin-top: 20px;
+}
 /*
 #input-latitude {
   width: 250px;

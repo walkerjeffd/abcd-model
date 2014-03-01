@@ -6,8 +6,10 @@ define([
   'app/charts',
   'app/utils',
   'app/sim',
-  'app/views/soil_theory_chart'
-], function ($, _, Backbone, d3, Charts, Utils, SimModel, SoilTheoryChart) {
+  'app/views/soil_theory_chart',
+  'app/views/gw_theory_chart',
+  'app/views/controls'
+], function ($, _, Backbone, d3, Charts, Utils, SimModel, SoilTheoryChart, GWTheoryChart, ControlsView) {
   'use strict';
   
   var CalibrationPage = Backbone.View.extend({
@@ -20,9 +22,7 @@ define([
       
       this.dispatcher = options.dispatcher;
 
-      this.colors = d3.scale.ordinal()
-        .range([this.model.colors('Q'), "black"])
-        .domain(['Q', 'Flow_in']);
+      this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
 
       this.soilChart = new SoilTheoryChart({
         model: this.model, 
@@ -32,16 +32,52 @@ define([
         yLabel: ' '
       });
 
-      this.initSliders();
-      this.initCharts();
+      this.gwChart = new GWTheoryChart({
+        model: this.model,
+        id: 'chart-gw', 
+        width: 270, 
+        height: 200,
+        yLabel: ' '
+      });
 
-      this.listenToOnce(this.model, 'sync', this.checkInput);
-      this.listenTo(this.model, 'change', this.render);
-      this.listenTo(this.model, 'change', this.updateSliders);
-      
+      this.simModel = new SimModel();
+
+      this.initCharts();
+      this.initSliders();
+
       this.render();
 
+      this.listenToOnce(this.model, 'sync', this.checkInput);
+      this.listenTo(this.model, 'change:input', this.checkInput);
+      this.listenTo(this.model, 'change', this.render);
+      this.listenTo(this.model, 'change', this.updateSliders);
+
+      this.dispatcher.on('focus', this.focusTheory.bind(this));
+      
       this.dispatcher.trigger('status', 'Ready!');
+    },
+
+    focusTheory: function(x) {      
+      if (x !== undefined) {
+        var input = this.model.get('input');
+        var i = 0, len = input.length;
+        
+        var output = this.simModel.run(this.model);
+
+        for (; i < (len-1); i++) {
+          if (input[i+1].Date > x) {
+            break;
+          }
+        }
+
+        this.model.set("PET", input[i].PET_in);
+
+        this.soilChart.focus(output[i].W);
+        this.gwChart.focus(output[i].W);
+      } else {
+        this.soilChart.focus();
+        this.gwChart.focus();
+      }
     },
 
     checkInput: function(model, response, options) {
@@ -49,6 +85,7 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
+      this.simModel.setInput(this.model.get('input'));
     },
 
     initSliders: function() {
@@ -70,15 +107,14 @@ define([
 
     render: function() {
       var numberFormat = d3.format("4.4f");
-      if (this.model.get('input') && this.model.get('input').length) {
-        var simModel = SimModel(this.model.get('input'));
-        simModel.run(this.model);
-
-        var stats = this.computeStats(simModel.output, 'Flow_in', 'Q');
-
-        d3.select("#chart-line").call(this.chartsLine.data(simModel.output));
-        d3.select("#chart-scatter").call(this.chartsScatter.data(simModel.output));
-        // d3.select("#chart-cdf").call(this.chartsCDF.data(simModel.output));
+      if (this.model.get('input') && this.model.get('input').length > 0) {
+        var output = this.simModel.run(this.model);
+        
+        var stats = this.computeStats(output, 'Flow_in', 'Q');
+        
+        d3.select("#chart-line").call(this.charts.Line.data(output));
+        d3.select("#chart-scatter").call(this.charts.Scatter.data(output));
+        // d3.select("#chart-cdf").call(this.charts.CDF.data(this.simModel.output));
 
         this.$("#stat-rmse").text(numberFormat(stats.rmse));
         this.$("#stat-nse").text(numberFormat(stats.nse));
@@ -113,17 +149,20 @@ define([
       };
     },
 
-
     initCharts: function() {
-      this.charts.Line = Charts.TimeseriesLineChart()
+      console.log(Charts);
+      var that = this;
+      this.charts.Line = Charts.ZoomableTimeseriesLineChart()
         .x(function(d) { return d.Date; })
         .width(570)
         .height(200)
         .yVariables(['Flow_in', 'Q'])
         .yDomain([0.001, 2])
         .yScale(d3.scale.log())
-        .color(this.colors)
-        .yLabel('Observed and Simulated (Red) Streamflow (in/day)');
+        .color(this.model.colors)
+        .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
+        .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
+        .onMouseout(function(x) { that.dispatcher.trigger('focus'); });
 
       this.charts.Scatter = Charts.ScatterChart()
         .x(function(d) { return d.Flow_in; })
@@ -146,7 +185,7 @@ define([
       //   .yScale(d3.scale.log())
       //   .yDomain([0.001, 2])
       //   .yVariables(['Flow_in', 'Q'])
-      //   .color(this.colors)
+      //   .color(this.model.colors)
       //   .yLabel('CDF of Obs. and Sim. (Red) Streamflow')
       //   .xLabel('Cumulative Frequency');
 

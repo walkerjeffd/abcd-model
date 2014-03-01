@@ -1,29 +1,35 @@
 define([
 ], function () {
-  var SimModel = function(input) {
+  var SimModel = function() {
     'use strict';
 
-    var output =  [];
-    
-    for (var i = 0, len = input.length; i < len; i++) {
-      output.push({
-        Date: input[i].Date,
-        Precip_in: input[i].Precip_in,
-        Flow_in: input[i].Flow_in,
-        W: 0.0,
-        S: 0.0,
-        G: 0.0,
-        Y: 0.0,
-        GR: 0.0,
-        DR: 0.0,
-        dG: 0.0,
-        ET: 0.0,
-        At: 0.0,
-        mt: 0.0,
-        Pe: 0.0,
-        Q: 0.0
-      });           
-    }
+    var output,
+        input;
+
+    var setInput = function(x) {
+      // console.log('setting input', x);
+      input = x;
+      output = [];
+      for (var i = 0, len = input.length; i < len; i++) {
+        output.push({
+          Date: input[i].Date,
+          Precip_in: input[i].Precip_in,
+          Flow_in: input[i].Flow_in,
+          W: 0.0,
+          S: 0.0,
+          G: 0.0,
+          Y: 0.0,
+          GR: 0.0,
+          DR: 0.0,
+          dG: 0.0,
+          ET: 0.0,
+          At: 0.0,
+          mt: 0.0,
+          Pe: 0.0,
+          Q: 0.0
+        });           
+      }  
+    };
 
     var run = function(params) {
       var At, mt, Pe, W, Y, S, GR, DR, G, dG, ET, Q;
@@ -71,12 +77,15 @@ define([
         output[i].Pe = Pe;
         output[i].Q = Q;
       }
+
+      return output;
     };
     
     return {
       run: run,
-      intput: input,
-      output: output
+      input: input,
+      output: output,
+      setInput: setInput
     };
   };
 

@@ -6,50 +6,10 @@
 {% block content %}
   <div class="row">
     <div class="col-md-3">
-      <div class="text-center">
-        <div class="btn-toolbar">
-          <button class="btn btn-primary" id="btn-save"><span class="glyphicon glyphicon-save"></span> Save</button>
-          <button class="btn btn-danger" data-target="#modal-delete" data-toggle="modal" id="btn-delete-model"><span class="glyphicon glyphicon-trash"></span> Delete</button>
-          <button class="btn btn-success" data-target="#modal-help" data-toggle="modal"><span class="glyphicon glyphicon-question-sign"></span> Help</button>
-        </div>
+      <div class="text-center" id="controls">
       </div>
       <hr>
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#parameters" data-toggle="tab">Parameters</a></li>
-        <li><a href="#initial" data-toggle="tab">Initial</a></li>
-      </ul>
-
-      <div class="tab-content">
-        <div class="tab-pane active" id="parameters">
-          <dl>
-            <dt>a: <span id="param-a"></span></dt>
-            <dd><input class="slider" type="range" min="0.98" max="1" step="0.001" value="0.998" name="a" /></dd>
-
-            <dt>b: <span id="param-b"></span></dt>
-            <dd><input class="slider" type="range" min="1" max="10" step="0.1" value="6.35" name="b" /></dd>
-
-            <dt>c: <span id="param-c"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="1" step="0.01" value="0.38" name="c" /></dd>
-
-            <dt>d: <span id="param-d"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="0.2" step="0.001" value="0.0302" name="d"/></dd>
-          </dl>
-        </div>
-        <div class="tab-pane" id="initial">
-          <dl>
-            <dt>Snow Depth: <span id="param-A0"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="1" name="A0"/></dd>
-
-            <dt>Soil Moisture: <span id="param-S0"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="S0"/></dd>
-
-            <dt>Groundwater: <span id="param-G0"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="2" name="G0"/></dd>
-          </dl>
-        </div>
-      </div>
-      <hr>
-      <div id="chart-soil"></div>
+      {% include 'tabs-parameters.html' %}
     </div>
     <div class="col-md-6">
       <div id="chart-line"></div>
@@ -70,4 +30,28 @@
     </div>
   </div>
 
+{% endblock %}
+
+
+{% block modals %}
+
+{% include 'control-modals.html' %}
+
+<div class="modal fade" role="dialog" id="modal-help">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Calibration Help</h3>
+      </div>
+      <div class="modal-body">
+        <h4>Description</h4>
+        <p></p>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

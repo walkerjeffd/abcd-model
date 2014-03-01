@@ -403,7 +403,7 @@ define([
           yVariables = [yVariables];
         }
 
-        nestData = yVariables.map(function(name) {
+        var nestData = yVariables.map(function(name) {
           return {
             name: name,
             values: d3.zip(chartData.map(xValue),chartData.map(function(d) { return d[name]; }))
@@ -517,6 +517,227 @@ define([
     chart.data = function(_) {
       if (!arguments.length) return chartData;
       chartData = _;
+      return chart;
+    };
+
+    chart.yVariables = function(_) {
+      if (!arguments.length) return yVariables;
+      yVariables = _;
+      return chart;
+    };
+
+    chart.yDomain = function(_) {
+      if (!arguments.length) return yDomain;
+      yDomain = _;
+      return chart;
+    };
+
+    chart.yScale = function(_) {
+      if (!arguments.length) return yScale;
+      yScale = _;
+      return chart;
+    };
+
+    chart.yAxis = function(_) {
+      if (!arguments.length) return yAxis;
+      yAxis = _;
+      return chart;
+    };
+
+    chart.color = function(_) {
+      if (!arguments.length) return color;
+      color = _;
+      return chart;
+    };
+
+    return chart;
+  };
+
+  var ZoomableTimeseriesLineChart = function() {
+    var svg,
+        margin = {top: 20, right: 20, bottom: 30, left: 50},
+        width = 960,
+        height = 500,
+        xScale = d3.time.scale(),
+        yScale = d3.scale.linear(),
+        xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
+        yAxis = d3.svg.axis().ticks(5, "g").orient("left"),
+        xValue = function(d) { return d[0]; },
+        yValue = function(d) { return d[1]; },
+        color,
+        yLabel = "",
+        line = d3.svg.line().x(X).y(Y),
+        chartData = [],
+        nestData,
+        lines,
+        xExtent,
+        yVariables = [],
+        yDomain,
+        zoom,
+        onMousemove,
+        onMouseout;
+
+    function chart(selection) {
+      selection.each(function() {
+
+        yAxis.scale(yScale);
+
+        if (typeof yVariables === 'string') {
+          yVariables = [yVariables];
+        }
+
+        nestData = yVariables.map(function(name) {
+          return {
+            name: name,
+            values: d3.zip(chartData.map(xValue),chartData.map(function(d) { return d[name]; }))
+          };
+        });
+
+        if (!color) {
+          color = d3.scale.category10().domain(yVariables);
+        }
+        
+        if (!zoom) {
+          xScale
+            .range([0, width - margin.left - margin.right])
+            .domain(xExtent);
+
+          yScale
+            .range([height - margin.top - margin.bottom, 0])
+            .domain(yDomain || [
+              d3.min([0, d3.min(nestData, function(d) { return d3.min(d.values, function(d) { return d[1]; }); })]),
+              d3.max(nestData, function(d) { return d3.max(d.values, function(d) { return d[1]; }); })]);
+
+          zoom = d3.behavior.zoom().x(xScale).scaleExtent([1, 50]).on("zoom", draw);
+        }        
+
+        if (!svg) {
+          svg = d3.select(this).selectAll('svg').data([nestData]);
+
+          var gEnter = svg.enter().append('svg').append('g')
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+            
+          gEnter.append('g').attr('class', 'x axis')
+            .attr("transform", "translate(0," + yScale.range()[0] + ")");
+
+          gEnter.append('g').attr('class', 'y axis')
+            .append("text")
+              .attr("y", 0)
+              .attr("x", 5)
+              .attr("dy", -5)
+              .style("text-anchor", "start")
+              .text(yLabel);
+
+          gEnter.append('g').attr('class', 'lines')
+            .attr("clip-path", "url(#clip)");
+
+          var clip = svg.append("defs").append("clipPath")
+            .attr("id", "clip")
+            .append("rect")
+            .attr("id", "clip-rect")
+            .attr("x", "0")
+            .attr("y", "0")
+            .attr("width", width - margin.left - margin.right)
+            .attr("height", height - margin.top - margin.bottom);
+
+          svg.append("rect")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")")            
+            .attr("width", width - margin.left - margin.right)
+            .attr("height", height - margin.top - margin.bottom)
+            .attr("class", "overlay")
+            .on("mousemove", function() {
+              onMousemove(xScale.invert(d3.mouse(this)[0]));
+            })
+            .on("mouseout", function() {
+              onMouseout();
+            })
+            .call(zoom);
+
+        }
+
+        svg.attr("width", width)
+           .attr("height", height);
+
+        draw();
+      });
+    }
+
+    function draw() {
+      var distanceToEnd = xScale.range()[1] - xScale(xExtent[1]);
+
+      zoom.translate([d3.min([d3.max([zoom.translate()[0], distanceToEnd+zoom.translate()[0]]), 0]), 0]);
+
+      svg.select('.x.axis')
+          .call(xAxis);
+
+      svg.select('.y.axis')
+          .call(yAxis);
+
+      lines = svg.select('g.lines').selectAll('.line')
+            .data(nestData);
+        
+      lines.enter().append('path').attr('class', 'line');
+      
+      lines.attr("d", function(d) { return line(d.values); })
+        .style("stroke", function(d) { return color(d.name); });
+
+      lines.exit().remove();
+    }
+
+    function X(d) {
+      return xScale(d[0]);
+    }
+
+    function Y(d) {
+      return yScale(d[1]);
+    }
+
+    chart.width = function(_) {
+      if (!arguments.length) return width;
+      width = _;
+      return chart;
+    };
+
+    chart.height = function(_) {
+      if (!arguments.length) return height;
+      height = _;
+      return chart;
+    };
+
+    chart.x = function(_) {
+      if (!arguments.length) return xValue;
+      xValue = _;
+      return chart;
+    };
+
+    chart.y = function(_) {
+      if (!arguments.length) return yValue;
+      yValue = _;
+      return chart;
+    };
+
+    chart.yLabel = function(_) {
+      if (!arguments.length) return yLabel;
+      yLabel = _;
+      return chart;
+    };
+
+    chart.data = function(_) {
+      if (!arguments.length) return chartData;
+      chartData = _;
+      xExtent = d3.extent(chartData, xValue);
+      return chart;
+    };
+
+    chart.onMouseout = function(_) {
+      if (!arguments.length) return onMouseout;
+      onMouseout = _;
+      return chart;
+    };
+
+    chart.onMousemove = function(_) {
+      if (!arguments.length) return onMousemove;
+      onMousemove = _;
       return chart;
     };
 
@@ -685,7 +906,7 @@ define([
     }
 
     chart.focus = function(x) {
-      if (!arguments.length) {
+      if (!x) {
         // clear focus
         svg.select('g.focus').selectAll('circle').remove();
         svg.select('g.focus').selectAll('line').remove();
@@ -1480,6 +1701,7 @@ define([
   return {
     TimeseriesAreaChart: TimeseriesAreaChart,
     TimeseriesLineChart: TimeseriesLineChart,
+    ZoomableTimeseriesLineChart: ZoomableTimeseriesLineChart,
     Timeseries: Timeseries,
     ComponentChart: ComponentChart,
     ScatterChart: ScatterChart,

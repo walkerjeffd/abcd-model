@@ -5,8 +5,9 @@ define([
   'd3',
   'app/charts',
   'app/utils',
-  'app/sim'
-], function ($, _, Backbone, d3, Charts, Utils, SimModel) {
+  'app/sim',
+  'app/views/controls'
+], function ($, _, Backbone, d3, Charts, Utils, SimModel, ControlsView) {
   'use strict';
   
   var MonteCarloPage = Backbone.View.extend({
@@ -25,6 +26,8 @@ define([
       console.log('Initialize: MonteCarloPage');
       
       this.dispatcher = options.dispatcher;
+
+      this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
 
       this.isRunning = false;
       this.tracking = false;
@@ -258,7 +261,7 @@ define([
         that.loadSimulation(_.omit(d, 'rmse'));
       };
 
-      this.charts.Line = Charts.TimeseriesLineChart()
+      this.charts.Line = Charts.ZoomableTimeseriesLineChart()
           .x(function(d) { return d.Date; })
           .width(800)
           .height(200)

@@ -41,6 +41,10 @@ define([
 
     render: function() {
       d3.select('#' + this.id).call(this.chart);
+    },
+
+    focus: function(x) {
+      this.chart.focus(x);
     }
 
   });

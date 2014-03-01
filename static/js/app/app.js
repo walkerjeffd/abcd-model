@@ -1,33 +1,35 @@
 define([
-    'bootstrap',
-    'app/models/app',
-    'app/views/app'
+  'bootstrap',
+  'app/models/app',
+  'app/views/app'
 ], function (Bootstrap, AppModel, AppView) {
-    'use strict';
+  'use strict';
 
-    var initialize = function(page) {
-        console.log('App initialized');
+  var initialize = function(page) {
+    console.log('App initialized');
 
-        var appModel = new AppModel({id: 1});
-        var appView;
+    var appDispatcher = _.extend({}, Backbone.Events);
+    var appModel = new AppModel({id: 1});
+    var appView;
 
-        if (page != "index") {
-            appView = new AppView({model: appModel, el: $('body'), page: page});
+    if (page != "index") {
+      appView = new AppView({model: appModel, el: $('body'), page: page, dispatcher: appDispatcher});
 
-            appModel.fetch({
-                error: function(model, response, options) {
-                    model.save();
-                }
-            });
+      appModel.fetch({
+        error: function(model, response, options) {
+          model.save();
         }
-        
-        window.debug = {
-            app: appModel,
-            view: appView
-        };
+      });
+    }
+    
+    window.debug = {
+      app: appModel,
+      view: appView,
+      dispatcher: appDispatcher
     };
+  };
 
-    return {
-        initialize: initialize
-    };
+  return {
+      initialize: initialize
+  };
 });

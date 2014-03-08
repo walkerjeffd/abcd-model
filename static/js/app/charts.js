@@ -574,6 +574,7 @@ define([
         yVariables = [],
         yDomain,
         zoom,
+        onZoom,
         onMousemove,
         onMouseout;
 
@@ -608,7 +609,7 @@ define([
               d3.min([0, d3.min(nestData, function(d) { return d3.min(d.values, function(d) { return d[1]; }); })]),
               d3.max(nestData, function(d) { return d3.max(d.values, function(d) { return d[1]; }); })]);
 
-          zoom = d3.behavior.zoom().x(xScale).scaleExtent([1, 50]).on("zoom", draw);
+          zoom = d3.behavior.zoom().x(xScale).scaleExtent([1, 100]).on("zoom", draw);
         }        
 
         if (!svg) {
@@ -646,10 +647,14 @@ define([
             .attr("height", height - margin.top - margin.bottom)
             .attr("class", "overlay")
             .on("mousemove", function() {
-              onMousemove(xScale.invert(d3.mouse(this)[0]));
+              if (onMousemove) {
+                onMousemove(xScale.invert(d3.mouse(this)[0]));
+              }
             })
             .on("mouseout", function() {
-              onMouseout();
+              if (onMouseout) {
+                onMouseout();
+              }
             })
             .call(zoom);
 
@@ -666,6 +671,10 @@ define([
       var distanceToEnd = xScale.range()[1] - xScale(xExtent[1]);
 
       zoom.translate([d3.min([d3.max([zoom.translate()[0], distanceToEnd+zoom.translate()[0]]), 0]), 0]);
+
+      if (onZoom) {
+        onZoom(zoom.translate(), zoom.scale());
+      }
 
       svg.select('.x.axis')
           .call(xAxis);
@@ -691,6 +700,14 @@ define([
     function Y(d) {
       return yScale(d[1]);
     }
+
+    chart.zoomX = function(translate, scale) {
+      if (zoom) {
+        zoom.translate(translate);
+        zoom.scale(scale);
+        draw();
+      }
+    };
 
     chart.width = function(_) {
       if (!arguments.length) return width;
@@ -726,6 +743,12 @@ define([
       if (!arguments.length) return chartData;
       chartData = _;
       xExtent = d3.extent(chartData, xValue);
+      return chart;
+    };
+
+    chart.onZoom = function(_) {
+      if (!arguments.length) return onZoom;
+      onZoom = _;
       return chart;
     };
 

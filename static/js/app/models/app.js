@@ -50,8 +50,8 @@ define([
             console.log('AppModel: initialize');
             this.isNewModel = true;
             this.colors = d3.scale.ordinal()
-                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black"])
-                .domain(['P', 'S', 'ET', 'Qrecharge', 'Qrunoff', 'G', 'Qdischarge', 'Q', 'Flow_in']);
+                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black", "green", "blue"])
+                .domain(['P', 'S', 'ET', 'Qrecharge', 'Qrunoff', 'G', 'Qdischarge', 'Q', 'Flow_in', 'Rainfall_in', 'Snowmelt_in']);
         },
 
         isNew: function () {

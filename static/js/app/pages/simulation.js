@@ -112,8 +112,10 @@ define([
     render: function() {
       if (this.model.get('input') && this.model.get('input').length > 0) {
         var output = this.simModel.run(this.model);
+        console.log(output[0]);
 
         d3.select('#chart-flow').call(this.charts.Flow.data(output));
+        d3.select('#chart-precip').call(this.charts.Precip.data(output));
         d3.select('#chart-storage').call(this.charts.Storage.data(output));
       }
 
@@ -125,9 +127,15 @@ define([
 
     },
 
+    zoomCharts: function(translate, scale) {
+      // this.charts.Flow.zoomX(translate, scale);
+      this.charts.Precip.zoomX(translate, scale);
+      // this.charts.Storage.zoomX(translate, scale);
+    },
+
     initCharts: function() {
       var that = this;
-      this.charts.Flow = Charts.ZoomableTimeseriesLineChart()
+      this.charts.Flow = new Charts.ZoomableTimeseriesLineChart()
         .x(function(d) { return d.Date; })
         .width(550)
         .height(200)
@@ -137,9 +145,20 @@ define([
         .color(this.model.colors)
         .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
         .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
+        .onMouseout(function(x) { that.dispatcher.trigger('focus'); })
+        .onZoom(function(translate, scale) { this.zoomCharts(translate, scale); }.bind(this));
+
+      this.charts.Precip = new Charts.ZoomableTimeseriesLineChart()
+        .x(function(d) { return d.Date; })
+        .width(550)
+        .height(200)
+        .yVariables(['Pe'])
+        .color(this.model.colors)
+        .yLabel('')
+        .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
         .onMouseout(function(x) { that.dispatcher.trigger('focus'); });
 
-      this.charts.Storage = Charts.TimeseriesAreaChart()
+      this.charts.Storage = new Charts.TimeseriesAreaChart()
         .x(function(d) { return d.Date; })
         .width(550)
         .height(200)

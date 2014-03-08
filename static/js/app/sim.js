@@ -1,5 +1,6 @@
 define([
-], function () {
+  'underscore'
+], function (_) {
   var SimModel = function() {
     'use strict';
 
@@ -11,23 +12,20 @@ define([
       input = x;
       output = [];
       for (var i = 0, len = input.length; i < len; i++) {
-        output.push({
-          Date: input[i].Date,
-          Precip_in: input[i].Precip_in,
-          Flow_in: input[i].Flow_in,
-          W: 0.0,
-          S: 0.0,
-          G: 0.0,
-          Y: 0.0,
-          GR: 0.0,
-          DR: 0.0,
-          dG: 0.0,
-          ET: 0.0,
-          At: 0.0,
-          mt: 0.0,
-          Pe: 0.0,
-          Q: 0.0
-        });           
+        var timestep = _.clone(input[i]);
+        timestep.W = 0.0;
+        timestep.S = 0.0;
+        timestep.G = 0.0;
+        timestep.Y = 0.0;
+        timestep.GR = 0.0;
+        timestep.DR = 0.0;
+        timestep.dG = 0.0;
+        timestep.ET = 0.0;
+        timestep.At = 0.0;
+        timestep.mt = 0.0;
+        timestep.Pe = 0.0;
+        timestep.Q = 0.0;
+        output.push(timestep);           
       }  
     };
 

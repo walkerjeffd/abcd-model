@@ -31,6 +31,15 @@ define([
       return true;
     };
 
+    var sum = function(x) {
+      var n = x.length;
+      if (n === 0) return NaN;
+      var m = 0,
+          i = -1;
+      while (++i < n) m += x[i];
+      return m;
+    };
+
     var mean = function(x) {
       // science.js
       var n = x.length;
@@ -76,6 +85,7 @@ define([
 
     return {
         checkDates: checkDates,
+        sum: sum,
         mean: mean,
         variance: variance,
         solarRadiation: solarRadiation,

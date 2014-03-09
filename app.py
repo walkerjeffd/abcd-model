@@ -33,9 +33,9 @@ def simulation():
 def calibration():
     return render_template('calibration.html')
 
-@app.route('/montecarlo.html')
-def montecarlo():
-    return render_template('montecarlo.html')
+@app.route('/optimization.html')
+def optimization():
+    return render_template('optimization.html')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'build':

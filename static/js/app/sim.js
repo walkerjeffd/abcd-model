@@ -9,6 +9,7 @@ define([
 
     var setInput = function(x) {
       // console.log('setting input', x);
+
       input = x;
       output = [];
       for (var i = 0, len = input.length; i < len; i++) {
@@ -26,7 +27,7 @@ define([
         timestep.Pe = 0.0;
         timestep.Q = 0.0;
         output.push(timestep);           
-      }  
+      }
     };
 
     var run = function(params) {

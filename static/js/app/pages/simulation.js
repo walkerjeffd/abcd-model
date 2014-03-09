@@ -10,12 +10,17 @@ define([
   'app/views/soil_theory_chart',
   'app/views/gw_theory_chart',
   'app/views/diagram',
-  'app/views/controls'
-], function ($, _, Backbone, Bootstrap, d3, Charts, Utils, SimModel, SoilTheoryChart, GWTheoryChart, Diagram, ControlsView) {
+  'app/views/controls',
+  'app/views/chart'
+], function ($, _, Backbone, Bootstrap, d3, Charts, Utils, SimModel, SoilTheoryChart, GWTheoryChart, Diagram, ControlsView, ChartView) {
   'use strict';
 
   var SimulationPage = Backbone.View.extend({
     charts: [],
+
+    formats: {
+      'number': d3.format("4.2f")
+    },
 
     events: {
       'click #btn-add-chart-ok': 'addChartFromModal'
@@ -70,25 +75,9 @@ define([
       this.$("#select-add-chart").children(":selected").each(function(i, option) {
         variables.push(option.value);
       });
-      console.log(variables);
       
       if (variables.length > 0) {
-        var $el = d3.selectAll('.chart-container').append('div')[0];
-        console.log($el);
-        this.addChart({
-          el: $el,
-          key: 'Precip',
-          primary: false,
-          variables: variables,
-          chart: new Charts.ZoomableTimeseriesLineChart()
-                            .x(function(d) { return d.Date; })
-                            .width(550)
-                            .height(200)
-                            // .color(this.model.colors)
-                            .yLabel('')
-                            .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
-                            .onMouseout(function(x) { that.dispatcher.trigger('focus'); })
-        });
+        this.addChart(variables);
       }
     },
 
@@ -144,84 +133,72 @@ define([
     render: function() {
       if (this.model.get('input') && this.model.get('input').length > 0) {
         var output = this.simModel.run(this.model);
-        console.log(output[0]);
 
+        var sumPrecip = Utils.sum(_.pluck(output, 'Precip_in'));
+        var sumFlow = Utils.sum(_.pluck(output, 'Q'));
+        var sumEvap = Utils.sum(_.pluck(output, 'ET'));
+        var sumOut = sumFlow+sumEvap;
+        var initSoil = this.model.get('S0');
+        var endSoil = output[output.length-1]['S'];
+        var initGW = this.model.get('G0');
+        var endGW = output[output.length-1]['G'];
+        var initSnow = this.model.get('A0');
+        var endSnow = output[output.length-1]['At'];
+        var netStorage = (endSoil+endGW+endSnow) - (initSoil+initGW+initSnow);
+        var err = netStorage+sumOut-sumPrecip;
+
+        d3.select('#sum-in').text(this.formats.number(sumPrecip));
+        d3.select('#sum-out').text(this.formats.number(sumOut));
+        d3.select('#sum-net').text(this.formats.number(netStorage));
+        d3.select('#sum-error').text(this.formats.number(err));
+
+        d3.select('#chart-flow').call(this.chartFlow.data(output));
         this.charts.forEach(function(chart) {
-          // console.log(chart.el);
-          d3.select(chart.el[0]).call(chart.chart.data(output));
+          chart.update(output);
         });
       }
 
-      if (!this.model.isNew() && this.model.hasChanged()) {
+      var attrs = _.without(d3.keys(this.model.changedAttributes()), 'PET');
+      if (!this.model.isNew() && this.model.hasChanged() && attrs.length > 0) {
         this.dispatcher.trigger('status', 'Unsaved changes...');
       } else {
         this.dispatcher.trigger('status', 'Ready!');
       }
-
     },
 
     zoomCharts: function(translate, scale) {
-      // this.charts.Flow.zoomX(translate, scale);
       this.charts.forEach(function(chart) {
-        if (!chart.chart.onZoom()) {
-          chart.chart.zoomX(translate, scale);
-        }
+        chart.zoom(translate, scale);
       });
-      // this.charts.Precip.zoomX(translate, scale);
-      // this.charts.Storage.zoomX(translate, scale);
     },
 
-    addChart: function(chart) {
-      chart.chart.yVariables(chart.variables);
-      this.charts.push(chart);
+    addChart: function(variables) {
+      console.log("Add Chart", variables);
+      var newChart = new ChartView({variables: variables, dispatcher: this.dispatcher});
+      this.$('.chart-container').append(newChart.render().el);
+      this.charts.push(newChart);
+      this.render();
     },
 
     initCharts: function() {
+      console.log('Init charts');
       var that = this;
-      this.addChart({
-        el: d3.selectAll('#chart-flow')[0],
-        key: 'Flow',
-        primary: true,
-        variables: ['Flow_in', 'Q'],
-        chart: new Charts.ZoomableTimeseriesLineChart()
-                      .x(function(d) { return d.Date; })
-                      .width(550)
-                      .height(200)
-                      .yDomain([0.001, 2])
-                      .yScale(d3.scale.log())
-                      .color(this.model.colors)
-                      .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
-                      .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
-                      .onMouseout(function(x) { that.dispatcher.trigger('focus'); })
-                      .onZoom(function(translate, scale) { this.zoomCharts(translate, scale); }.bind(this))
-      });
+      
+      this.chartFlow = new Charts.ZoomableTimeseriesLineChart()
+        .id(this.cid)
+        .x(function(d) { return d.Date; })
+        .width(550)
+        .height(200)
+        .yDomain([0.001, 2])
+        .yScale(d3.scale.log())
+        .color(this.model.colors)
+        .yVariables(['Flow_in', 'Q'])
+        .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
+        .onMousemove(function(x) { this.dispatcher.trigger('focus', x); }.bind(this))
+        .onMouseout(function(x) { this.dispatcher.trigger('focus'); }.bind(this))
+        .onZoom(function(translate, scale) { this.zoomCharts(translate, scale); }.bind(this));
 
-      this.addChart({
-        el: d3.selectAll('#chart-precip')[0],
-        key: 'Precip',
-        primary: false,
-        variables: ['Pe'],
-        chart: new Charts.ZoomableTimeseriesLineChart()
-                          .x(function(d) { return d.Date; })
-                          .width(550)
-                          .height(200)
-                          .color(this.model.colors)
-                          .yLabel('')
-                          .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
-                          .onMouseout(function(x) { that.dispatcher.trigger('focus'); })
-      });
-
-      // this.charts.forEach(function(chart) {
-      //   chart.chart.yVariables(chart.variables);
-      // });
-
-      // this.charts.Storage = new Charts.TimeseriesAreaChart()
-      //   .x(function(d) { return d.Date; })
-      //   .width(550)
-      //   .height(200)
-      //   .yVariables(['G', 'S'])
-      //   .yScale(d3.scale.linear())
-      //   .color(this.model.colors);
+      this.addChart(['Pe']);
     }
 
   });

@@ -12,5 +12,10 @@ define([
       '<button class="btn btn-success" data-target="#modal-help" data-toggle="modal"><span class="glyphicon glyphicon-question-sign"></span> Help</button>',
     '</div>'].join(''));
 
+  Templates.chart = _.template([
+    '<button type="button" class="close">&times;</button>',
+    '<div class="chart">',
+    '</div>'].join(''));
+
   return Templates;
 });

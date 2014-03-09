@@ -60,6 +60,15 @@ svg {
 .tab-param > dl {
   margin-top: 20px;
 }
+
+#btn-add-chart {
+  margin-top: 20px;
+}
+
+.dotty-row > div {
+  padding: 0;
+}
+
 /*
 #input-latitude {
   width: 250px;

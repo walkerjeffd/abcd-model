@@ -555,6 +555,7 @@ define([
 
   var ZoomableTimeseriesLineChart = function() {
     var svg,
+        id = 0,
         margin = {top: 20, right: 20, bottom: 30, left: 50},
         width = 960,
         height = 500,
@@ -577,6 +578,18 @@ define([
         onZoom,
         onMousemove,
         onMouseout;
+
+    var customTimeFormat = d3.time.format.multi([
+      [".%L", function(d) { return d.getMilliseconds(); }],
+      [":%S", function(d) { return d.getSeconds(); }],
+      ["%I:%M", function(d) { return d.getMinutes(); }],
+      ["%I %p", function(d) { return d.getHours(); }],
+      ["%b %d", function(d) { return d.getDay() && d.getDate() != 1; }],
+      ["%b %d", function(d) { return d.getDate() != 1; }],
+      ["%b", function(d) { return d.getMonth(); }],
+      ["%Y", function() { return true; }]
+    ]);
+    xAxis.tickFormat(customTimeFormat).ticks(5);
 
     function chart(selection) {
       selection.each(function() {
@@ -612,6 +625,13 @@ define([
           zoom = d3.behavior.zoom().x(xScale).scaleExtent([1, 100]).on("zoom", draw);
         }        
 
+        var currentYMax = yScale.domain()[1];
+        var dataYMax = d3.max(nestData, function(d) { return d3.max(d.values, function(d) { return d[1]; }); });
+
+        if (dataYMax > currentYMax) {
+          yScale.domain([yScale.domain()[0], dataYMax]);
+        }
+
         if (!svg) {
           svg = d3.select(this).selectAll('svg').data([nestData]);
 
@@ -630,10 +650,10 @@ define([
               .text(yLabel);
 
           gEnter.append('g').attr('class', 'lines')
-            .attr("clip-path", "url(#clip)");
+            .attr("clip-path", "url(#clip-"+id+")");
 
           var clip = svg.append("defs").append("clipPath")
-            .attr("id", "clip")
+            .attr("id", "clip-"+id)
             .append("rect")
             .attr("id", "clip-rect")
             .attr("x", "0")
@@ -707,6 +727,12 @@ define([
         zoom.scale(scale);
         draw();
       }
+    };
+
+    chart.id = function(_) {
+      if (!arguments.length) return id;
+      id = _;
+      return chart;
     };
 
     chart.width = function(_) {

@@ -6,8 +6,8 @@ define([
     'app/pages/data',
     'app/pages/simulation',
     'app/pages/calibration',
-    'app/pages/montecarlo'
-], function ($, _, Backbone, TheoryPage, DataPage, SimulationPage, CalibrationPage, MonteCarloPage) {
+    'app/pages/optimization'
+], function ($, _, Backbone, TheoryPage, DataPage, SimulationPage, CalibrationPage, OptimizationPage) {
     'use strict';
 
     var AppView = Backbone.View.extend({
@@ -19,7 +19,7 @@ define([
             'data': DataPage,
             'simulation': SimulationPage,
             'calibration': CalibrationPage,
-            'montecarlo': MonteCarloPage
+            'optimization': OptimizationPage
         },
 
         initialize: function (options) {
@@ -40,7 +40,7 @@ define([
                 });
 
                 this.listenTo(this.model, 'all', function(event, model, response, options) {
-                  console.log('AppModel Event:', event, '|', response);
+                  // console.log('AppModel Event:', event, '|', response);
                 });
             }
 

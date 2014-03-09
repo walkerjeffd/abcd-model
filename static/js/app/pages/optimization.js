@@ -10,7 +10,7 @@ define([
 ], function ($, _, Backbone, d3, Charts, Utils, SimModel, ControlsView) {
   'use strict';
   
-  var MonteCarloPage = Backbone.View.extend({
+  var OptimizationPage = Backbone.View.extend({
     charts: {},
 
     events: {
@@ -23,11 +23,13 @@ define([
     },
 
     initialize: function(options) {
-      console.log('Initialize: MonteCarloPage');
+      console.log('Initialize: OptimizationPage');
       
       this.dispatcher = options.dispatcher;
 
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
+
+      this.simModel = new SimModel();
 
       this.isRunning = false;
       this.tracking = false;
@@ -43,22 +45,22 @@ define([
       this.initCharts();
 
       this.listenToOnce(this.model, 'sync', this.checkInput);
+      this.listenTo(this.model, 'change:input', this.checkInput);
       this.listenTo(this.model, 'change', this.updateSliders);
       this.listenTo(this.model, 'change', this.render);
 
-      this.listenToOnce(this.model, 'change:input', this.initSim);
-
       this.render();
-      // this.randomize();
 
       this.dispatcher.trigger('status', 'Ready!');
     },
 
     checkInput: function(model, response, options) {
+      console.log('Checking input');
       model = model || this.model;
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
+      this.simModel.setInput(this.model.get('input'));
     },
 
     resetHistory: function() {
@@ -67,17 +69,11 @@ define([
       this.render();
     },
 
-    initSim: function() {
-      this.simModel = new SimModel(this.model.get('input'));
-    },
-
     randomize: function() {
       var $a = this.$('param-a'),
           $b = this.$('param-b'),
           $c = this.$('param-c'),
           $d = this.$('param-d');
-
-      // console.log($a);
 
       var params = {
         a: Math.random()*0.02 + 0.98,
@@ -165,11 +161,11 @@ define([
       // console.log('Rendering...');
       var numberFormat = d3.format("4.4f");
       if (this.model.get('input') && this.model.get('input').length) {
-        this.simModel.run(this.model);
+        var output = this.simModel.run(this.model);
 
-        var stats = this.compute_stats(this.simModel.output, 'Flow_in', 'Q');
+        var stats = this.compute_stats(output, 'Flow_in', 'Q');
 
-        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
+        d3.select("#chart-line").call(this.charts.Line.data(output));
 
         var currentSim = {
             a: this.model.get('a'),
@@ -263,7 +259,7 @@ define([
 
       this.charts.Line = Charts.ZoomableTimeseriesLineChart()
           .x(function(d) { return d.Date; })
-          .width(800)
+          .width(860)
           .height(200)
           .yVariables(['Flow_in', 'Q'])
           .yDomain([0.001, 2])
@@ -327,5 +323,5 @@ define([
 
   });
 
-  return MonteCarloPage;
+  return OptimizationPage;
 });

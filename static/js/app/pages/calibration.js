@@ -120,7 +120,8 @@ define([
         this.$("#stat-nse").text(numberFormat(stats.nse));
 
         
-        if (!this.model.isNew() && this.model.hasChanged()) {
+        var attrs = _.without(d3.keys(this.model.changedAttributes()), 'PET');
+        if (!this.model.isNew() && this.model.hasChanged() && attrs.length > 0) {
           this.dispatcher.trigger('status', 'Unsaved changes...');
         } else {
           this.dispatcher.trigger('status', 'Ready!');

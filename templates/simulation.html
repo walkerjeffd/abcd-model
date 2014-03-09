@@ -26,6 +26,13 @@
       <hr>
     </div>
     <div class="col-md-3">
+      <h4>Mass Balance Summary</h4>
+      <ul class="list-unstyled">
+        <li><abbr title="Precipitation">Total Inflow</abbr>: <span id="sum-in"></span> in</li>
+        <li><abbr title="Flow + Evapotranspiration">Total Outflow</abbr>: <span id="sum-out"></span> in</li>
+        <li><abbr title="Change in Soil Moisture, Groundwater, Snow">Net Storage</abbr>: <span id="sum-net"></span> in</li>
+        <li><abbr title="Net Storage + Total Outflow - Total Inflow">Error</abbr>: <span id="sum-error"></span> in</li>
+      </ul>
     </div>
   </div>
 
@@ -61,6 +68,9 @@
           <option value="GR">Groundwater Recharge (in)</option>
           <option value="dG">Groundwater Discharge (in)</option>
         </select>
+        <br>
+        <p> </p>
+        <p>Note: Use ctrl+click to show multiple variables on one chart</p>
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-primary" data-dismiss="modal" id="btn-add-chart-ok">Ok</a>

@@ -24,8 +24,6 @@ define([
       this.$el.html(this.template());
     },
 
-    
-
     invalidAlert: function(model, error) {
       this.dispatcher.trigger('alert', error, 'danger');
     },

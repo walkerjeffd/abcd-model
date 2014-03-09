@@ -11,7 +11,8 @@
       <hr>
       {% include 'tabs-parameters.html' %}
       <hr>
-      
+      <h4>Model Diagram</h4>
+      <div id="diagram"></div>
     </div>
     <div class="col-md-6">
       <div class="chart-container">
@@ -25,8 +26,6 @@
       <hr>
     </div>
     <div class="col-md-3">
-      <h4>Model Diagram</h4>
-      <div id="diagram"></div>
     </div>
   </div>
 
@@ -41,12 +40,26 @@
       <div class="modal-body">
         <h4>Select Variables</h4>
         <select name="select-add-chart" id="select-add-chart" multiple="multiple" size="10">
+          <option value="Tmin_degC">Min Temperature (degC)</option>
+          <option value="Tmax_degC">Max Temperature (degC)</option>
+          <option value="Tavg_degC">Average Temperature (degC)</option>
+          <option value="Trng_degC">Temperature Range (degC)</option>
+          <option value="PET_in">Potential Evapotranspiration (in)</option>
           <option value="Precip_in">Observed Precipitation (in)</option>
-          <option value="Flow_in">Observed Flow (in)</option>
+          <option value="Pe">Effective Precipitation (in)</option>
           <option value="Rainfall_in">Rainfall (in)</option>
+          <option value="mt">Snowmelt (in)</option>
           <option value="Snowfall_in">Snowfall (in)</option>
           <option value="At">Snow Depth (in)</option>
-          <option value="mt">Snowmelt (in)</option>
+          <option value="Flow_in">Observed Flow (in)</option>
+          <option value="W">Available Water (in)</option>
+          <option value="S">Soil Moisture (in)</option>
+          <option value="Y">Evapotranspiration Opportunity (in)</option>
+          <option value="ET">Evapotranspiration (in)</option>
+          <option value="DR">Direct Runoff (in)</option>
+          <option value="G">Groundwater Storage (in)</option>
+          <option value="GR">Groundwater Recharge (in)</option>
+          <option value="dG">Groundwater Discharge (in)</option>
         </select>
       </div>
       <div class="modal-footer">

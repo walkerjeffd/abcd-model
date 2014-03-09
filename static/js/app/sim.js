@@ -31,6 +31,7 @@ define([
 
     var run = function(params) {
       var At, mt, Pe, W, Y, S, GR, DR, G, dG, ET, Q;
+      var Snowfall_in, Rainfall_in;
 
       var a = params.get('a');
       var b = params.get('b');
@@ -45,8 +46,12 @@ define([
           S = params.get('S0');
           G = params.get('G0');
         } else {
+
           At = Math.max((input[i].Tavg_degC > Tb ? At - mt : At - mt + input[i].Precip_in), 0);
         }
+
+        Snowfall_in = input[i].Tavg_degC > Tb ? 0 : input[i].Precip_in;
+        Rainfall_in = input[i].Precip_in - Snowfall_in;
 
         mt = input[i].Tavg_degC > Tb ? Math.min(At, e*(input[i].Tavg_degC - Tb)) : 0;
         Pe = input[i].Tavg_degC < Tb ? 0 : input[i].Precip_in + mt;
@@ -74,6 +79,8 @@ define([
         output[i].mt = mt;
         output[i].Pe = Pe;
         output[i].Q = Q;
+        output[i].Snowfall_in = Snowfall_in;
+        output[i].Rainfall_in = Rainfall_in;
       }
 
       return output;

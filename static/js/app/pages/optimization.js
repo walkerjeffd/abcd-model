@@ -39,7 +39,7 @@ define([
 
       this.colors = d3.scale.ordinal()
         .range([this.model.colors('Q'), "black"])
-        .domain(['Q', 'Flow_in']);
+        .domain(['Q', 'obsQ']);
 
       this.initSliders();
       this.initCharts();
@@ -60,7 +60,7 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
-      this.simModel.setInput(this.model.get('input'));
+      this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     resetHistory: function() {
@@ -163,7 +163,7 @@ define([
       if (this.model.get('input') && this.model.get('input').length) {
         var output = this.simModel.run(this.model);
 
-        var stats = this.compute_stats(output, 'Flow_in', 'Q');
+        var stats = this.compute_stats(output, 'obsQ', 'Q');
 
         d3.select("#chart-line").call(this.charts.Line.data(output));
 
@@ -261,7 +261,7 @@ define([
           .x(function(d) { return d.Date; })
           .width(860)
           .height(200)
-          .yVariables(['Flow_in', 'Q'])
+          .yVariables(['obsQ', 'Q'])
           .yDomain([0.001, 2])
           .yScale(d3.scale.log())
           .color(this.colors)

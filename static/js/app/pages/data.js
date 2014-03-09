@@ -32,8 +32,6 @@ define([
       this.listenTo(this.model, 'change:input', this.render);
       this.listenTo(this.model, 'sync', this.updateModelInfo);
 
-      
-
       this.render();
       this.dispatcher.trigger('status', 'Ready!');
     },
@@ -44,13 +42,13 @@ define([
     },
 
     updateName: function() {
-      console.log(this.$('#input-name').val());
+      // console.log(this.$('#input-name').val());
       this.model.set('watershedName', this.$('#input-name').val());
     },
 
     updateLatitude: function() {
-      console.log(this.$('#input-latitude').val());
-      this.model.set('latitude', +this.$('#input-latitude').val());
+      // console.log(this.$('#input-latitude').val());
+      this.model.set('latitude', parseFloat(this.$('#input-latitude').val()));
     },
 
     initDragDrop: function($drop) {
@@ -136,16 +134,8 @@ define([
         return null;
       }
 
-      // compute derived
-      data.forEach(function(d) {
-        d.Jday = d3.time.dayOfYear(d.Date) + 1;
-        d.Trng_degC = d.Tmax_degC - d.Tmin_degC;
-        d.Tavg_degC = (d.Tmax_degC + d.Tmin_degC)/2;
-      });
-
       this.model.addInputData(data);
       this.dispatcher.trigger('status', 'Ready!');
-      // this.loadData(this.defaultParams, data);
     },
 
     render: function() {

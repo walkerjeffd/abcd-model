@@ -109,7 +109,7 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
-      this.simModel.setInput(this.model.get('input'));
+      this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     initSliders: function() {
@@ -134,7 +134,7 @@ define([
       if (this.model.get('input') && this.model.get('input').length > 0) {
         var output = this.simModel.run(this.model);
 
-        var sumPrecip = Utils.sum(_.pluck(output, 'Precip_in'));
+        var sumPrecip = Utils.sum(_.pluck(output, 'P'));
         var sumFlow = Utils.sum(_.pluck(output, 'Q'));
         var sumEvap = Utils.sum(_.pluck(output, 'ET'));
         var sumOut = sumFlow+sumEvap;
@@ -192,7 +192,7 @@ define([
         .yDomain([0.001, 2])
         .yScale(d3.scale.log())
         .color(this.model.colors)
-        .yVariables(['Flow_in', 'Q'])
+        .yVariables(['obsQ', 'Q'])
         .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
         .onMousemove(function(x) { this.dispatcher.trigger('focus', x); }.bind(this))
         .onMouseout(function(x) { this.dispatcher.trigger('focus'); }.bind(this))

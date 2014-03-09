@@ -1,6 +1,7 @@
 define([
-    'underscore'
-], function (_) {
+    'underscore',
+    'd3'
+], function (_, d3) {
     'use strict';
     
     var checkDates = function(dates) {
@@ -65,30 +66,11 @@ define([
       return s / (n - 1);
     };
 
-    var solarRadiation = function(latitude, Jday) {
-      // section 4.4.2 of Handbook of Hydrology, Maidment
-      // good for latitudes of -55 to +55
-      var latitudeRadians = latitude/180*Math.PI,
-          r = 1 + 0.033*Math.cos(2*Math.PI*Jday/365),
-          delta = 0.4093*Math.sin((2*Math.PI*Jday/365) - 1.405),
-          omega = Math.acos(-Math.tan(latitudeRadians)*Math.tan(delta)),
-          daylight = 24*omega/Math.PI,
-          S0_mm = 15.392*r*(Math.sin(latitudeRadians)*omega*Math.sin(delta) + Math.cos(latitudeRadians)*Math.cos(delta)*Math.sin(omega)),
-          S0_in = S0_mm*0.03937;
-      
-      return S0_in;
-    };
-
-    var Hargreaves = function(Solar_in, Trng_degC, Tavg_degC) {
-      return Trng_degC > 0 ? 0.0023*Solar_in*(Tavg_degC+17.8)*Math.sqrt(Trng_degC) : 0;
-    };
 
     return {
         checkDates: checkDates,
         sum: sum,
         mean: mean,
-        variance: variance,
-        solarRadiation: solarRadiation,
-        Hargreaves: Hargreaves
+        variance: variance
     };
 });

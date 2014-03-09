@@ -15,8 +15,6 @@ define([
   var CalibrationPage = Backbone.View.extend({
     charts: {},
 
-    events: {},
-
     initialize: function(options) {
       console.log('Initialize: CalibrationPage');
       
@@ -85,7 +83,7 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
-      this.simModel.setInput(this.model.get('input'));
+      this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     initSliders: function() {
@@ -110,7 +108,7 @@ define([
       if (this.model.get('input') && this.model.get('input').length > 0) {
         var output = this.simModel.run(this.model);
         
-        var stats = this.computeStats(output, 'Flow_in', 'Q');
+        var stats = this.computeStats(output, 'obsQ', 'Q');
         
         d3.select("#chart-line").call(this.charts.Line.data(output));
         d3.select("#chart-scatter").call(this.charts.Scatter.data(output));
@@ -157,7 +155,7 @@ define([
         .x(function(d) { return d.Date; })
         .width(570)
         .height(200)
-        .yVariables(['Flow_in', 'Q'])
+        .yVariables(['obsQ', 'Q'])
         .yDomain([0.001, 2])
         .yScale(d3.scale.log())
         .color(this.model.colors)
@@ -166,7 +164,7 @@ define([
         .onMouseout(function(x) { that.dispatcher.trigger('focus'); });
 
       this.charts.Scatter = Charts.ScatterChart()
-        .x(function(d) { return d.Flow_in; })
+        .x(function(d) { return d.obsQ; })
         .y(function(d) { return d.Q; })
         .width(285)
         .height(305)

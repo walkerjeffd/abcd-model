@@ -28,6 +28,7 @@ define([
         .width(550)
         .height(200)
         .yVariables(this.variables)
+        .yVariableLabels(this.model.variableLabels)
         // .color(this.model.colors)
         .yLabel('')
         .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })

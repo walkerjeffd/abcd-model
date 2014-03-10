@@ -43,10 +43,10 @@ define([
       this.initCharts();
       this.initSliders();
 
-      this.render();
+      // this.render();
 
       this.listenToOnce(this.model, 'sync', this.checkInput);
-      this.listenTo(this.model, 'change:input', this.checkInput);
+      this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.render);
       this.listenTo(this.model, 'change', this.updateSliders);
 
@@ -55,23 +55,22 @@ define([
       this.dispatcher.trigger('status', 'Ready!');
     },
 
-    focusTheory: function(x) {      
+    focusTheory: function(x) {
       if (x !== undefined) {
         var input = this.model.get('input');
         var i = 0, len = input.length;
         
-        var output = this.simModel.run(this.model);
-
+        // find date of current mouse position
         for (; i < (len-1); i++) {
           if (input[i+1].Date > x) {
             break;
           }
         }
 
-        this.model.set("PET", input[i].PET_in);
+        this.model.set("PET", this.simModel.output[i].PET);
 
-        this.soilChart.focus(output[i].W);
-        this.gwChart.focus(output[i].W);
+        this.soilChart.focus(this.simModel.output[i].W);
+        this.gwChart.focus(this.simModel.output[i].W);
       } else {
         this.soilChart.focus();
         this.gwChart.focus();
@@ -83,6 +82,9 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
+    },
+
+    setInput: function(model, response, options) {
       this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
@@ -105,19 +107,18 @@ define([
 
     render: function() {
       var numberFormat = d3.format("4.4f");
-      if (this.model.get('input') && this.model.get('input').length > 0) {
-        var output = this.simModel.run(this.model);
+      if (this.model.get('input') && this.model.get('input').length > 0 && _.without(d3.keys(this.model.changedAttributes()), 'PET').length > 0) {
+        this.simModel.run(this.model);
         
-        var stats = this.computeStats(output, 'obsQ', 'Q');
+        var stats = this.computeStats(this.simModel.output, 'obsQ', 'Q');
         
-        d3.select("#chart-line").call(this.charts.Line.data(output));
-        d3.select("#chart-scatter").call(this.charts.Scatter.data(output));
-        // d3.select("#chart-cdf").call(this.charts.CDF.data(this.simModel.output));
+        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
+        d3.select("#chart-scatter").call(this.charts.Scatter.data(this.simModel.output));
+        d3.select("#chart-cdf").call(this.charts.CDF.data(this.simModel.output));
 
         this.$("#stat-rmse").text(numberFormat(stats.rmse));
         this.$("#stat-nse").text(numberFormat(stats.nse));
 
-        
         var attrs = _.without(d3.keys(this.model.changedAttributes()), 'PET');
         if (!this.model.isNew() && this.model.hasChanged() && attrs.length > 0) {
           this.dispatcher.trigger('status', 'Unsaved changes...');
@@ -149,25 +150,24 @@ define([
     },
 
     initCharts: function() {
-      console.log(Charts);
       var that = this;
       this.charts.Line = Charts.ZoomableTimeseriesLineChart()
         .x(function(d) { return d.Date; })
         .width(570)
         .height(200)
         .yVariables(['obsQ', 'Q'])
+        .yVariableLabels(this.model.variableLabels)
         .yDomain([0.001, 2])
         .yScale(d3.scale.log())
         .color(this.model.colors)
-        .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
         .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
         .onMouseout(function(x) { that.dispatcher.trigger('focus'); });
 
       this.charts.Scatter = Charts.ScatterChart()
         .x(function(d) { return d.obsQ; })
         .y(function(d) { return d.Q; })
-        .width(285)
-        .height(305)
+        .width(275)
+        .height(295)
         .r(2)
         .opacity(0.5)
         .yDomain([0.001, 2])
@@ -175,18 +175,19 @@ define([
         .xScale(d3.scale.log())
         .yScale(d3.scale.log())
         .one2one(true)
-        .yLabel('Simulated Streamflow (in/d)')
-        .xLabel('Observed Streamflow (in/d)');
+        .yLabel('Sim Flow (in/d)')
+        .xLabel('Obs Flow (in/d)');
 
-      // this.charts.CDF = Charts.CDFChart()
-      //   .width(285)
-      //   .height(305)
-      //   .yScale(d3.scale.log())
-      //   .yDomain([0.001, 2])
-      //   .yVariables(['Flow_in', 'Q'])
-      //   .color(this.model.colors)
-      //   .yLabel('CDF of Obs. and Sim. (Red) Streamflow')
-      //   .xLabel('Cumulative Frequency');
+      this.charts.CDF = Charts.CDFChart()
+        .width(275)
+        .height(295)
+        .yScale(d3.scale.log())
+        .yDomain([0.001, 2])
+        .yVariables(['obsQ', 'Q'])
+        // .yVariableLabels(this.model.variableLabels)        
+        .color(this.model.colors)
+        .yLabel('Cumulative Distribution Frequency')
+        .xLabel('Cumulative Frequency');
 
     }
 

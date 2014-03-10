@@ -30,7 +30,7 @@ define([
 
     // public function
     var setInput = function(input, latitude) {
-      console.log('SimModel: setting input data');
+      console.log('SimModel: set input');
       output.length = 0;
       
       // copy input to output, compute derived, and add placeholders for others
@@ -54,6 +54,7 @@ define([
         d.SF = NaN;
         d.RF = NaN;
         d.W = NaN;
+        d.WGW = NaN;
         d.S = NaN;
         d.G = NaN;
         d.Y = NaN;
@@ -65,13 +66,15 @@ define([
         d.mt = NaN;
         d.Pe = NaN;
         d.Q = NaN;
-        output.push(d);           
+        d.resQ = NaN;
+        output.push(d);
       }
+
     };
 
     var run = function(params) {
-      var At, mt, Pe, W, Y, S, GR, DR, G, dG, ET, Q;
-      var Solar_in, PET_in;
+      // console.log('SimModel: running');
+      var At, mt, Pe, W, Y, S, GR, DR, G, dG, ET, Q, WGW;
       var SF, RF;
 
       var a = params.get('a'),
@@ -105,13 +108,15 @@ define([
         GR = c * (W - Y);
         DR = (1 - c) * (W - Y);
 
+        WGW = GR + G; // available groundwater
         G = (GR + G)/(1 + d);
         dG = d * G;
         ET = Y - S;
-        Q = Math.max(DR + dG, 0.0001);
+        Q = Math.max(DR + dG, 0.001);
 
         output[i].W = W;
         output[i].S = S;
+        output[i].WGW = WGW;
         output[i].G = G;
         output[i].Y = Y;
         output[i].GR = GR;
@@ -124,13 +129,13 @@ define([
         output[i].Q = Q;
         output[i].SF = SF;
         output[i].RF = RF;
+        output[i].resQ = output[i].obsQ - Q;
       }
-
-      return output;
     };
     
     return {
       run: run,
+      getOutput: function() { return output; },
       output: output,
       setInput: setInput
     };

@@ -42,3 +42,17 @@ python -m SimpleHTTPServer
 ```
 
 Open a web browser, and navigate to <http://127.0.0.1:8000/>
+
+To Do 
+-----
+
+* refactor sliders
+* brush chart instead of zoom
+* organize variable names in add chart list
+* add reset button to undo changes?
+
+Done
+-----
+
+* add description to data view
+* rename reset button to clear on optimization

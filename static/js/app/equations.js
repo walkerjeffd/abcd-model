@@ -15,31 +15,32 @@ define([
       return Y(W) - S(W);
     };
 
-    var Qrecharge = function(W) {
+    var GR = function(W) {
       return params.get('c')*(W - Y(W));
     };
 
-    var Qrunoff = function(W) {
+    var DR = function(W) {
       return (1-params.get('c'))*(W - Y(W));
     };
 
-    var Qdischarge = function(GR) {
-      return params.get('d')*G(GR);
+    var GD = function(WGW) {
+      return params.get('d')*G(WGW);
     };
 
-    var G = function(GR) {
-      return GR/(1 + params.get('d'));
+    var G = function(WGW) {
+      return WGW/(1 + params.get('d'));
     };
 
     return {
       Y: Y,
       S: S,
       ET: ET,
-      Qrecharge: Qrecharge,
-      Qrunoff: Qrunoff,
-      Qdischarge: Qdischarge,
+      GR: GR,
+      DR: DR,
+      GD: GD,
       G: G
     };
   };
+  
   return Equations;
 });

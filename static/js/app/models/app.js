@@ -28,14 +28,11 @@ define([
             if (this.isNew()) {
                 return;
             }
-            if (attrs.watershedName === '') {
-                return 'Watershed name cannot be blank';
-            }
             if ((attrs.latitude < 20) || (attrs.latitude > 50)) {
                 return 'Latitude must be between 20 and 50 degrees North';
             }
             if (attrs.latitude === null || !isFinite(attrs.latitude)) {
-                return 'Latitude must be between 20 and 50 degrees North';
+                return 'Latitude must be a number between 20 and 50 degNorth in decimal degrees (e.g. 42.4)';
             }
            
             if (attrs.input.length === 0) {
@@ -50,7 +47,31 @@ define([
             this.isNewModel = true;
             this.colors = d3.scale.ordinal()
                 .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black", "green", "blue"])
-                .domain(['P', 'S', 'ET', 'Qrecharge', 'Qrunoff', 'G', 'Qdischarge', 'Q', 'Flow_in', 'Rainfall_in', 'Snowmelt_in']);
+                .domain(['P', 'S', 'ET', 'GR', 'DR', 'G', 'GD', 'Q', 'obsQ', 'RF', 'mt']);
+            this.variableLabels = {
+                Tmin: 'Min Temp (degC)',
+                Tmax: 'Max Temp (degC)',
+                P: 'Precip (in)',
+                obsQ: 'Obs Flow (in)',
+                Trng: 'Temp Range (degC)',
+                Tavg: 'Avg Temp (degC)',
+                SR: 'Solar (in)',
+                PET: 'PET (in)',
+                SF: 'Snowfall (in)',
+                RF: 'Rainfall (in)',
+                W: 'Available Water (in)',
+                S: 'Soil Moisture (in)',
+                G: 'Groundwater (in)',
+                Y: 'ET Opportunity (in)',
+                GR: 'GW Recharge (in)',
+                DR: 'Direct Runoff (in)',
+                dG: 'GW Discharge (in)',
+                ET: 'ET (in)',
+                At: 'Snowdepth (in)',
+                mt: 'Snowmelt (in)',
+                Pe: 'Effective Precip (in)',
+                Q: 'Sim Flow (in)'
+            };
         },
 
         isNew: function () {

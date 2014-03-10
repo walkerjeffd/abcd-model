@@ -25,6 +25,8 @@ define([
       this.$name = this.$('#input-name');
       this.$latitude = this.$('#input-latitude');
 
+      this.$('#instructions').html($('#modal-help .modal-body').html());
+
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
       this.initDragDrop(this.$('#holder'));
       this.initCharts();      
@@ -48,7 +50,8 @@ define([
 
     updateLatitude: function() {
       // console.log(this.$('#input-latitude').val());
-      this.model.set('latitude', parseFloat(this.$('#input-latitude').val()));
+      var latitude = this.$('#input-latitude').val()*1;
+      this.model.set('latitude', parseFloat(latitude));
     },
 
     initDragDrop: function($drop) {
@@ -144,10 +147,12 @@ define([
 
       if (this.model.get('input') && this.model.get('input').length) {
         console.log('Showing charts');
+        this.$('#instructions').hide();
         d3.select('#chart-temp').call(this.charts.Temp.data(this.model.get('input')));
         d3.select('#chart-precip').call(this.charts.Precip.data(this.model.get('input')));
         d3.select('#chart-flow').call(this.charts.Flow.data(this.model.get('input')));
-        d3.select('#chart-pet').call(this.charts.PET.data(this.model.get('input')));
+      } else {
+        this.$('#instructions').show();
       }
 
       if (!this.model.isNew() && this.model.hasChanged()) {
@@ -182,13 +187,6 @@ define([
           .yLabel('Observed Flow (in/d)')
           .yAxis(d3.svg.axis().ticks(5).orient("left"));
 
-      this.charts.PET = Charts.Timeseries()
-          .xVariable('Date')
-          .yVariable('PET_in')
-          .width(550)
-          .height(150)
-          .yLabel('Potential Evapotranspiration (in/d)')
-          .yAxis(d3.svg.axis().ticks(5).orient("left"));
     }
 
   });

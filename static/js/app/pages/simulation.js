@@ -53,12 +53,15 @@ define([
 
       this.diagram = new Diagram({model: this.model, el: this.$('#diagram')});
 
+      this.zoomTranslate = [0, 0];
+      this.zoomScale = 1;
+
       this.initCharts();
       this.initSliders();
       this.render();
 
       this.listenToOnce(this.model, 'sync', this.checkInput);
-      this.listenTo(this.model, 'change:input', this.checkInput);
+      this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.render);
       this.listenTo(this.model, 'change', this.updateSliders);
 
@@ -86,7 +89,7 @@ define([
         var input = this.model.get('input');
         var i = 0, len = input.length;
         
-        var output = this.simModel.run(this.model);
+        // this.simModel.run(this.model);
 
         for (; i < (len-1); i++) {
           if (input[i+1].Date > x) {
@@ -94,10 +97,9 @@ define([
           }
         }
 
-        this.model.set("PET", input[i].PET_in);
-
-        this.soilChart.focus(output[i].W);
-        this.gwChart.focus(output[i].W);
+        this.model.set("PET", this.simModel.output[i].PET);
+        this.soilChart.focus(this.simModel.output[i].W);
+        this.gwChart.focus(this.simModel.output[i].WGW);
       } else {
         this.soilChart.focus();
         this.gwChart.focus();
@@ -109,6 +111,9 @@ define([
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
+    },
+
+    setInput: function(model, response, options) {
       this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
@@ -130,32 +135,42 @@ define([
       });
     },
 
+    computeSummary: function(data) {
+      var sumPrecip = Utils.sum(_.pluck(data, 'P')),
+          sumFlow = Utils.sum(_.pluck(data, 'Q')),
+          sumEvap = Utils.sum(_.pluck(data, 'ET')),
+          sumOutflow = sumFlow+sumEvap,
+          initSoil = this.model.get('S0'),
+          endSoil = data[data.length-1]['S'],
+          initGW = this.model.get('G0'),
+          endGW = data[data.length-1]['G'],
+          initSnow = this.model.get('A0'),
+          endSnow = data[data.length-1]['At'],
+          netStorage = (endSoil+endGW+endSnow) - (initSoil+initGW+initSnow),
+          err = netStorage + sumOutflow - sumPrecip;
+
+      return {
+        sumInflow: sumPrecip,
+        sumOutflow: sumOutflow,
+        netStorage: netStorage,
+        err: err
+      };
+    },
+
     render: function() {
       if (this.model.get('input') && this.model.get('input').length > 0) {
-        var output = this.simModel.run(this.model);
+        this.simModel.run(this.model);
+        var stats = this.computeSummary(this.simModel.output);
 
-        var sumPrecip = Utils.sum(_.pluck(output, 'P'));
-        var sumFlow = Utils.sum(_.pluck(output, 'Q'));
-        var sumEvap = Utils.sum(_.pluck(output, 'ET'));
-        var sumOut = sumFlow+sumEvap;
-        var initSoil = this.model.get('S0');
-        var endSoil = output[output.length-1]['S'];
-        var initGW = this.model.get('G0');
-        var endGW = output[output.length-1]['G'];
-        var initSnow = this.model.get('A0');
-        var endSnow = output[output.length-1]['At'];
-        var netStorage = (endSoil+endGW+endSnow) - (initSoil+initGW+initSnow);
-        var err = netStorage+sumOut-sumPrecip;
+        d3.select('#sum-in').text(this.formats.number(stats.sumInflow));
+        d3.select('#sum-out').text(this.formats.number(stats.sumOutflow));
+        d3.select('#sum-net').text(this.formats.number(stats.netStorage));
+        d3.select('#sum-error').text(this.formats.number(stats.err));
 
-        d3.select('#sum-in').text(this.formats.number(sumPrecip));
-        d3.select('#sum-out').text(this.formats.number(sumOut));
-        d3.select('#sum-net').text(this.formats.number(netStorage));
-        d3.select('#sum-error').text(this.formats.number(err));
-
-        d3.select('#chart-flow').call(this.chartFlow.data(output));
+        d3.select('#chart-flow').call(this.chartFlow.data(this.simModel.output));
         this.charts.forEach(function(chart) {
-          chart.update(output);
-        });
+          chart.update(this.simModel.output);
+        }.bind(this));
       }
 
       var attrs = _.without(d3.keys(this.model.changedAttributes()), 'PET');
@@ -167,6 +182,8 @@ define([
     },
 
     zoomCharts: function(translate, scale) {
+      this.zoomTranslate = translate;
+      this.zoomScale = scale;
       this.charts.forEach(function(chart) {
         chart.zoom(translate, scale);
       });
@@ -174,8 +191,10 @@ define([
 
     addChart: function(variables) {
       console.log("Add Chart", variables);
-      var newChart = new ChartView({variables: variables, dispatcher: this.dispatcher});
-      this.$('.chart-container').append(newChart.render().el);
+      var newChart = new ChartView({model: this.model, variables: variables, dispatcher: this.dispatcher});
+      newChart.render().zoom(this.translate, this.scale);
+      this.$('.chart-container').append(newChart.el);
+      // newChart;
       this.charts.push(newChart);
       this.render();
     },
@@ -193,7 +212,8 @@ define([
         .yScale(d3.scale.log())
         .color(this.model.colors)
         .yVariables(['obsQ', 'Q'])
-        .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
+        .yVariableLabels(this.model.variableLabels)
+        // .yLabel('Observed and Simulated (Red) Streamflow (in/day)')
         .onMousemove(function(x) { this.dispatcher.trigger('focus', x); }.bind(this))
         .onMouseout(function(x) { this.dispatcher.trigger('focus'); }.bind(this))
         .onZoom(function(translate, scale) { this.zoomCharts(translate, scale); }.bind(this));

@@ -24,7 +24,7 @@ define([
         .height(height)
         .funcs([
           {label: 'Groundwater', name: 'G', func: this.equations.G },
-          {label: 'Discharge', name: 'Qdischarge', func: this.equations.Qdischarge }
+          {label: 'Discharge', name: 'GD', func: this.equations.GD }
         ])
         .colors(this.colors)
         .xLabel('Groundwater[t-1] + Qrecharge[t]')
@@ -41,11 +41,9 @@ define([
       d3.select('#' + this.id).call(this.chart);
     },
 
-    
     focus: function(x) {
       this.chart.focus(x);
     }
-
 
   });
 

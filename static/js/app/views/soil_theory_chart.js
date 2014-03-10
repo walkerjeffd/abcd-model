@@ -25,8 +25,8 @@ define([
         .funcs([
           {label: 'Soil Moisture', name: 'S', func: this.equations.S },
           {label: 'ET', name: 'ET', func: this.equations.ET },
-          {label: 'Runoff', name: 'Qrunoff', func: this.equations.Qrunoff },
-          {label: 'Recharge', name: 'Qrecharge', func: this.equations.Qrecharge }
+          {label: 'Runoff', name: 'DR', func: this.equations.DR },
+          {label: 'Recharge', name: 'GR', func: this.equations.GR }
         ])
         .colors(this.colors)
         .xLabel('Soil Moisture[t-1] + Precip[t]')

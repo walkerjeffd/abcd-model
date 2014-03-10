@@ -39,6 +39,7 @@
 
     </div>
     <div class="col-md-9">
+      <div id="instructions" style="display:none;"></div>
       <div id="chart-temp"></div>
       <div id="chart-precip"></div>
       <div id="chart-flow"></div>
@@ -58,27 +59,28 @@
         <h3>Datasets Help</h3>
       </div>
       <div class="modal-body">
-        <h4>Description</h4>
-        <p>On this page, load the input dataset, set the name of your watershed, and configure the computations for Potential Evapotranspiration (PET) and Snowmelt. Once the Save button is clicked, the dataset will be stored in the browser and available for simulation.</p>
-        <hr>
         <h4>Instructions</h4>
         <ol>
-          <li>Set name of watershed below "Watershed Information"</li>
-          <li>Drag and drop a CSV file into the drop zone below "Drop Input File"</li>
-          <li>Click "PET" tab, set latitude</li>
-          <li>Click "Snow" tab, set parameters</li>
-          <li>Click "Save" button</li>
+          <li>Enter watershed name</li>
+          <li>Enter watershed latitude in degrees North (needed to compute potential evapotranspiration)</li>
+          <li>Drag and drop CSV input data file from your desktop</li>
+          <li>Click Save button</li>
         </ol>
-        <hr>
-        <h4>Input File</h4>
-        <p>The input file must be a standard CSV file with the following columns:</p>
+        <h4>Input Data Format</h4>
+        <p>Input data must be in a comma-separated value (CSV) file format with the following columns:</p>
         <ul>
-          <li><b>Date</b>: string, format YYYY-MM-DD (e.g. "2014-02-20")</li>
-          <li><b>Precip_in</b>: numeric</li>
-          <li><b>Tmin_degC</b>: numeric</li>
-          <li><b>Tmax_degC</b>: numeric</li>
-          <li><b>Flow_in</b>: numeric</li>
+          <li><strong>Date</strong>: Date in format "yyyy-mm-dd" (e.g. 2014-03-10)</li>
+          <li><strong>Precip_in</strong>: Precipitation (inches/day)</li>
+          <li><strong>Tmin_degC</strong>: Minimum air temperature (degrees C)</li>
+          <li><strong>Tmax_degC</strong>: Maximum air temperature (degrees C)</li>
+          <li><strong>Flow_in</strong>: Streamfow (inches/day)</li>
         </ul>
+        <p><em>Example File Format</em>:</p>
+        <img src="{{ url_for('static', filename='media/input_file_example.png') }}" alt="Example input file">
+        <h4>Need an Input File?</h4>
+        <p>Here is an input file for the Aberjona River: <a href="{{ url_for('static', filename='media/aberjona.csv') }}">aberjona.csv</a></p>
+        <h4>Beware!</h4>
+        <p>If using Excel, make sure the date format is set correctly. The default "mm/dd/yyyy" format cannot be used. To specify the correct date format, highlight the date column and set the cell format to Custom with type "yyyy-mm-dd", then save the file as a CSV.</p>
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>

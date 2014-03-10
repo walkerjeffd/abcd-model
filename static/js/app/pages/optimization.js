@@ -16,7 +16,7 @@ define([
     events: {
       'click #btn-track': 'toggleTracker',
       'click #btn-random': 'randomize',
-      'click #btn-reset': 'resetHistory',
+      'click #btn-clear': 'clearHistory',
       'click #btn-start': 'startLoop',
       'click #btn-stop': 'stopLoop',
       'click #btn-optimal': 'loadOptimal'
@@ -37,9 +37,9 @@ define([
       this.history = [];
       this.loadingExisting = false;
 
-      this.colors = d3.scale.ordinal()
-        .range([this.model.colors('Q'), "black"])
-        .domain(['Q', 'obsQ']);
+      // this.colors = d3.scale.ordinal()
+      //   .range([this.model.colors('Q'), "black"])
+      //   .domain(['Q', 'obsQ']);
 
       this.initSliders();
       this.initCharts();
@@ -63,7 +63,7 @@ define([
       this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
-    resetHistory: function() {
+    clearHistory: function() {
       this.history.length = 0;
       this.optimal = 0;
       this.render();
@@ -161,11 +161,11 @@ define([
       // console.log('Rendering...');
       var numberFormat = d3.format("4.4f");
       if (this.model.get('input') && this.model.get('input').length) {
-        var output = this.simModel.run(this.model);
+        this.simModel.run(this.model);
 
-        var stats = this.compute_stats(output, 'obsQ', 'Q');
+        var stats = this.compute_stats(this.simModel.output, 'obsQ', 'Q');
 
-        d3.select("#chart-line").call(this.charts.Line.data(output));
+        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
 
         var currentSim = {
             a: this.model.get('a'),
@@ -262,11 +262,10 @@ define([
           .width(860)
           .height(200)
           .yVariables(['obsQ', 'Q'])
+          .yVariableLabels(this.model.variableLabels)
           .yDomain([0.001, 2])
           .yScale(d3.scale.log())
-          .color(this.colors)
-          .yLabel('Observed (Black), Simulated (Red), and Optimal (blue) Streamflow (in/day)');
-
+          .color(this.model.colors);
 
         this.charts.A = Charts.DottyChart()
           .x(function(d) { return d.a; })

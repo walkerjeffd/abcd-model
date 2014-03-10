@@ -563,6 +563,7 @@ define([
         yScale = d3.scale.linear(),
         xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
         yAxis = d3.svg.axis().ticks(5, "g").orient("left"),
+        // yAxis = d3.svg.axis().ticks(5).orient("left"),
         xValue = function(d) { return d[0]; },
         yValue = function(d) { return d[1]; },
         color,
@@ -573,6 +574,8 @@ define([
         lines,
         xExtent,
         yVariables = [],
+        yVariableLabels = {},
+        legend = true,
         yDomain,
         zoom,
         onZoom,
@@ -633,9 +636,55 @@ define([
         }
 
         if (!svg) {
-          svg = d3.select(this).selectAll('svg').data([nestData]);
+          svg = d3.select(this).append('svg');
+          
+          if (legend) {
+            var gLegend = svg.append('g').attr('class', 'legend')
+              .attr("transform", "translate(" + margin.left + ",0)");
 
-          var gEnter = svg.enter().append('svg').append('g')
+            // add all legend items
+            var gLegendItems = gLegend.selectAll('.legend-item').data(yVariables);
+
+            gLegendItems.enter()
+              .append('g')
+              .attr('class', 'legend-item');
+
+            gLegendItems.append('circle')
+              .attr('r', 4)
+              .attr('cx', 4)
+              .attr('cy', 8)
+              .attr('fill', function(d) { return color(d); });
+
+            gLegendItems.append('text')
+              .attr("y", "1em")
+              .attr("x", 0)
+              .attr("dy", 0)
+              .attr("dx", 12)
+              .style("text-anchor", "start")
+              .text(function(d) { return yVariableLabels[d]; });
+
+            // shift legend items by the width of their div
+            var labelWidths = [];
+            gLegendItems.each(function(d, i) { 
+              labelWidths.push(d3.select(this)[0][0].getBBox().width);}
+            );
+
+            var labelOffsets = [0];
+            for (var i = 1; i < (labelWidths.length); i++) {
+              labelOffsets.push(labelOffsets[i-1] + labelWidths[i-1]);
+            }
+
+            gLegendItems.attr('transform', function(d, i) {
+              if (i === 0) {
+                return null;
+              } else {
+                return 'translate(' + (labelOffsets[i]+5*i) + ',0)';
+              }
+            });
+
+          }
+
+          var gEnter = svg.append('g')
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
             
           gEnter.append('g').attr('class', 'x axis')
@@ -790,6 +839,18 @@ define([
       return chart;
     };
 
+    chart.legend = function(_) {
+      if (!arguments.length) return legend;
+      legend = _;
+      return chart;
+    };
+
+    chart.yVariableLabels = function(_) {
+      if (!arguments.length) return yVariableLabels;
+      yVariableLabels = _;
+      return chart;
+    };
+
     chart.yVariables = function(_) {
       if (!arguments.length) return yVariables;
       yVariables = _;
@@ -859,8 +920,6 @@ define([
         var yStack = stack(funcs.map(function(f) {
           return { name: f.name, label: f.label, values: d3.zip(xValues, f.values)};
         }));
-
-        // console.log(yStack);
 
         if (!colors) {
           colors = d3.scale.category20().domain(funcs.map(function(f) { return f.name; }));
@@ -955,6 +1014,7 @@ define([
     }
 
     chart.focus = function(x) {
+      // console.log('ComponentChart: focus', x);
       if (!x) {
         // clear focus
         svg.select('g.focus').selectAll('circle').remove();
@@ -1097,11 +1157,11 @@ define([
       return chart;
     };
 
-      return chart;
+    return chart;
   };
 
   var ScatterChart = function() {
-    var margin = {top: 20, right: 20, bottom: 35, left: 50},
+    var margin = {top: 20, right: 20, bottom: 40, left: 50},
         width = 960,
         height = 500,
         xScale = d3.scale.linear(),
@@ -1157,9 +1217,10 @@ define([
         gEnter.append('g').attr('class', 'y axis')
           .append("text")
             .attr("y", 0)
-            .attr("x", 5)
-            .attr("dy", -5)
-            .style("text-anchor", "start")
+            .attr("x", 0)
+            .attr("dy", 15)
+            .attr("transform", "rotate(-90)")
+            .style("text-anchor", "end")
             .text(yLabel); 
         gEnter.append('g').attr('class', 'circles');
 
@@ -1310,7 +1371,7 @@ define([
   };
 
   var CDFChart = function() {
-    var margin = {top: 20, right: 20, bottom: 35, left: 50},
+    var margin = {top: 20, right: 20, bottom: 40, left: 50},
         width = 960,
         height = 500,
         xScale = d3.scale.linear(),
@@ -1320,11 +1381,13 @@ define([
         xValue = function(d) { return d[0]; },
         yValue = function(d) { return d[1]; },
         color,
-        yLabel = "",
+        xLabel = '',
+        yLabel = '',
         line = d3.svg.line().x(X).y(Y),
         chartData = [],
         yVariables = [],
-        yDomain;
+        yDomain,
+        nestData;
 
     function chart(selection) {
       selection.each(function() {
@@ -1335,17 +1398,17 @@ define([
         }
 
         nestData = yVariables.map(function(name) {
+          var x = _.pluck(chartData, name),
+                  xSort = x.sort(function (a, b) { return a - b; }),
+                  n = x.length;
+
+          var freq = xSort.map(function(d, i) {
+            return ((i+1)-0.5)/n;
+          });
+
           return {
             name: name,
-            values: function() {
-              var x = chartData.map(function(d) { return d[name]; });
-              var xSort = x.sortNumber();
-              var n = x.length;
-              f = xSort.map(function(d, i) {
-                return ((i+1)-0.5)/n;
-              });
-              return d3.zip(f, xSort);
-            }()
+            values: d3.zip(freq, xSort)
           };
         });
 
@@ -1366,7 +1429,6 @@ define([
 
         var gEnter = svg.enter().append('svg').append('g');
 
-        // gEnter.append('path').attr('class', 'line');
         gEnter.append('g').attr('class', 'x axis')
           .append("text")
             .attr("y", 0)

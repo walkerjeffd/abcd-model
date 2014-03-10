@@ -46,13 +46,15 @@ Open a web browser, and navigate to <http://127.0.0.1:8000/>
 To Do 
 -----
 
-* refactor sliders
-* brush chart instead of zoom
+* GOF and MB to each page
 * organize variable names in add chart list
 * add reset button to undo changes?
+* brush chart instead of zoom
+* refactor sliders
 
 Done
 -----
 
+* add optimal line to optimization 
 * add description to data view
 * rename reset button to clear on optimization

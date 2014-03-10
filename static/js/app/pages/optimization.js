@@ -37,10 +37,6 @@ define([
       this.history = [];
       this.loadingExisting = false;
 
-      // this.colors = d3.scale.ordinal()
-      //   .range([this.model.colors('Q'), "black"])
-      //   .domain(['Q', 'obsQ']);
-
       this.initSliders();
       this.initCharts();
 
@@ -158,14 +154,17 @@ define([
     },
 
     render: function() {
-      // console.log('Rendering...');
       var numberFormat = d3.format("4.4f");
       if (this.model.get('input') && this.model.get('input').length) {
         this.simModel.run(this.model);
 
         var stats = this.compute_stats(this.simModel.output, 'obsQ', 'Q');
 
-        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
+        if (!this.tracking || (this.history.length === 0) || (this.history.length > 0 && (stats.rmse < this.history[this.optimal].rmse))) {
+          this.simModel.output.forEach(function(d) {
+            d.optQ = d.Q;
+          });
+        }
 
         var currentSim = {
             a: this.model.get('a'),
@@ -182,6 +181,8 @@ define([
             this.optimal = this.history.length-1;
           }
         }
+
+        d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
 
         if (this.loadingExisting) {
           this.loadingExisting = false;
@@ -261,7 +262,7 @@ define([
           .x(function(d) { return d.Date; })
           .width(860)
           .height(200)
-          .yVariables(['obsQ', 'Q'])
+          .yVariables(['obsQ', 'optQ', 'Q'])
           .yVariableLabels(this.model.variableLabels)
           .yDomain([0.001, 2])
           .yScale(d3.scale.log())

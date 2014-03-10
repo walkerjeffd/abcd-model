@@ -70,7 +70,7 @@ define([
         this.model.set("PET", this.simModel.output[i].PET);
 
         this.soilChart.focus(this.simModel.output[i].W);
-        this.gwChart.focus(this.simModel.output[i].W);
+        this.gwChart.focus(this.simModel.output[i].WGW);
       } else {
         this.soilChart.focus();
         this.gwChart.focus();
@@ -186,7 +186,7 @@ define([
         .yVariables(['obsQ', 'Q'])
         // .yVariableLabels(this.model.variableLabels)        
         .color(this.model.colors)
-        .yLabel('Cumulative Distribution Frequency')
+        .yLabel('Flow (in/d)')
         .xLabel('Cumulative Frequency');
 
     }

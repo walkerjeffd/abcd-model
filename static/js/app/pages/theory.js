@@ -30,6 +30,14 @@ define([
 
     },
 
+    updateSliders: function() {
+      var that = this;
+      this.$(".slider").each(function() {
+        this.value = +that.model.get(this.name);
+        that.$("#param-"+this.name).text(this.value);
+      });
+    },
+    
     initSliders: function() {
       var that = this;
       this.$(".slider").change(function() {

@@ -15,11 +15,13 @@ define([
     if (page != "index") {
       appView = new AppView({model: appModel, el: $('body'), page: page, dispatcher: appDispatcher});
 
-      appModel.fetch({
-        error: function(model, response, options) {
-          model.save();
-        }
-      });
+      if (page != "theory") {
+        appModel.fetch({
+          error: function(model, response, options) {
+            model.save();
+          }
+        });
+      }
     }
     
     window.debug = {

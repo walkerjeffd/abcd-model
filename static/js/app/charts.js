@@ -563,7 +563,6 @@ define([
         yScale = d3.scale.linear(),
         xAxis = d3.svg.axis().scale(xScale).orient("bottom"),
         yAxis = d3.svg.axis().ticks(5, "g").orient("left"),
-        // yAxis = d3.svg.axis().ticks(5).orient("left"),
         xValue = function(d) { return d[0]; },
         yValue = function(d) { return d[1]; },
         color,
@@ -577,6 +576,7 @@ define([
         yVariableLabels = {},
         legend = true,
         yDomain,
+        zoomable = true,
         zoom,
         onZoom,
         onMousemove,
@@ -724,8 +724,11 @@ define([
               if (onMouseout) {
                 onMouseout();
               }
-            })
-            .call(zoom);
+            });
+
+          if (zoomable) {
+            svg.selectAll("rect.overlay").call(zoom);
+          }
 
         }
 
@@ -737,11 +740,12 @@ define([
     }
 
     function draw() {
+      // update zoom, clamp to ends of timeseries
       var distanceToEnd = xScale.range()[1] - xScale(xExtent[1]);
-
       zoom.translate([d3.min([d3.max([zoom.translate()[0], distanceToEnd+zoom.translate()[0]]), 0]), 0]);
-
+      
       if (onZoom) {
+        // trigger zoom callback
         onZoom(zoom.translate(), zoom.scale());
       }
 
@@ -824,6 +828,12 @@ define([
     chart.onZoom = function(_) {
       if (!arguments.length) return onZoom;
       onZoom = _;
+      return chart;
+    };
+
+    chart.zoomable = function(_) {
+      if (!arguments.length) return zoomable;
+      zoomable = _;
       return chart;
     };
 
@@ -1440,10 +1450,11 @@ define([
         gEnter.append('g').attr('class', 'y axis')
           .append("text")
             .attr("y", 0)
-            .attr("x", 5)
-            .attr("dy", -5)
-            .style("text-anchor", "start")
-            .text(yLabel);
+            .attr("x", 0)
+            .attr("dy", 15)
+            .attr("transform", "rotate(-90)")
+            .style("text-anchor", "end")
+            .text(yLabel); 
 
         svg.attr("width", width)
            .attr("height", height);

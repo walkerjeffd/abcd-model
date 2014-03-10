@@ -66,18 +66,18 @@
             S_t &= \text{Soil Moisture} \\
             PET_t &= \text{Potential Evapotranspiration} \\
             ET_t &= \text{Actual Evapotranspiration} \\
-            Q^{Recharge}_t &= \text{Recharge from Soil to Groundwater} \\
-            Q^{Runoff}_t &= \text{Runoff from Soil to Streamflow}
+            DR_t &= \text{Direct Runoff from Soil to Streamflow} \\
+            GR_t &= \text{Groundwater Recharge from Soil}
           \end{array}$$
         </div>
         <div class="tab-pane" id="tab-soil-eqn">
           $$\begin{array} \\
-          W_t &= S_{t-1} + P_t = S_t + ET_t + Q^{Recharge}_t + Q^{Runoff}_t \\
-          Y_t &= S_t + ET_t = \frac{W_t+b}{2a} - \sqrt{\left(\frac{W+b}{2a}\right)^2 - \frac{bW}{a}} \\
-          S_t &= Y_te^{-PET/b} \\
-          ET_t &= Y_t\left(1-e^{-PET/b}\right) \\
-          Q^{Recharge}_t &= c*(W_t - Y_t) \\
-          Q^{Runoff}_t &= (1-c)*(W_t - Y_t)
+          W_t &= S_{t-1} + P_t = S_t + ET_t + GR_t + DR_t \\
+          Y_t &= S_t + ET_t = \frac{W_t+b}{2a} - \sqrt{\left(\frac{W_t+b}{2a}\right)^2 - \frac{bW_t}{a}} \\
+          S_t &= Y_te^{-PET_t/b} \\
+          ET_t &= Y_t\left(1-e^{-PET_t/b}\right) \\
+          DR_t &= (1-c)*(W_t - Y_t) \\
+          GR_t &= c*(W_t - Y_t) 
           \end{array}$$
         </div>
       </div>
@@ -105,14 +105,15 @@
           <div class="tab-pane active" id="tab-gw-variable">
             $$\begin{array}\\
               G_t &= \text{Groundwater Storage} \\
-              Q^{Recharge}_t &= \text{Recharge from Soil to Groundwater} \\
-              Q^{Discharge}_t &= \text{Discharge from Groundwater to Streamflow}
+              GR_t &= \text{Groundwater Recharge from Soil} \\
+              GD_t &= \text{Groundwater Discharge to Streamflow}
             \end{array}$$
           </div>
           <div class="tab-pane" id="tab-gw-eqn">
             $$\begin{array} \\
-            G_{t-1} + Q^{Recharge}_t &= G_t + Q^{Discharge}_t \\
-            Q^{Discharge}_t &= dG_t
+            G_t + GD_t &= G_{t-1} + GR_t \\
+            G_t &= \frac{G_{t-1} + GR_t}{1+d} \\
+            GD_t &= dG_t
             \end{array}$$
           </div>
         </div>

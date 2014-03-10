@@ -13,7 +13,8 @@ define([
 
       var width = options.width || 390,
           height = options.height || 300,
-          yLabel = options.yLabel || 'Soil Moisture[t] + ET[t] + Recharge[t] + Runoff[t]';
+          yLabel = options.yLabel || '';
+          // yLabel = options.yLabel || 'Soil Moisture[t] + ET[t] + Recharge[t] + Runoff[t]';
       
       this.colors = this.model.colors;
       

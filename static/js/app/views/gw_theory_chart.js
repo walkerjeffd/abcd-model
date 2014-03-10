@@ -13,7 +13,7 @@ define([
 
       var width = options.width || 390,
           height = options.height || 300,
-          yLabel = options.yLabel || 'Groundwater[t] + Qdischarge[t]';
+          yLabel = options.yLabel || '';
       
       this.colors = this.model.colors;
       
@@ -27,7 +27,7 @@ define([
           {label: 'Discharge', name: 'GD', func: this.equations.GD }
         ])
         .colors(this.colors)
-        .xLabel('Groundwater[t-1] + Qrecharge[t]')
+        .xLabel('Groundwater[t-1] + Recharge[t]')
         .yLabel(yLabel)
         .xDomain([0, 10])
         .yDomain([0, 10]);

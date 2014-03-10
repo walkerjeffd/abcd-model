@@ -46,31 +46,33 @@ define([
             console.log('AppModel: initialize');
             this.isNewModel = true;
             this.colors = d3.scale.ordinal()
-                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black", "green", "blue"])
-                .domain(['P', 'S', 'ET', 'GR', 'DR', 'G', 'GD', 'Q', 'obsQ', 'RF', 'mt']);
+                .range(["#444444", "#1f77b4", "#aec7e8", "#ffbb78", "#ff7f0e", "#98df8a","#2ca02c",  "#d62728", "black", "green", "blue", "steelblue"])
+                .domain(['P', 'S', 'ET', 'GR', 'DR', 'G', 'GD', 'Q', 'obsQ', 'RF', 'mt', 'optQ']);
             this.variableLabels = {
                 Tmin: 'Min Temp (degC)',
                 Tmax: 'Max Temp (degC)',
-                P: 'Precip (in)',
-                obsQ: 'Obs Flow (in)',
+                P: 'Precip (in/d)',
+                obsQ: 'Obs Flow (in/d)',
+                resQ: 'Residual Flow (in/d)',
+                optQ: 'Optimal Flow (in/d)',
                 Trng: 'Temp Range (degC)',
                 Tavg: 'Avg Temp (degC)',
-                SR: 'Solar (in)',
-                PET: 'PET (in)',
-                SF: 'Snowfall (in)',
-                RF: 'Rainfall (in)',
+                SR: 'Solar (in/d)',
+                PET: 'PET (in/d)',
+                SF: 'Snowfall (in/d)',
+                RF: 'Rainfall (in/d)',
                 W: 'Available Water (in)',
                 S: 'Soil Moisture (in)',
                 G: 'Groundwater (in)',
-                Y: 'ET Opportunity (in)',
-                GR: 'GW Recharge (in)',
-                DR: 'Direct Runoff (in)',
-                dG: 'GW Discharge (in)',
-                ET: 'ET (in)',
+                Y: 'ET Opportunity (in/d)',
+                GR: 'GW Recharge (in/d)',
+                DR: 'Direct Runoff (in/d)',
+                dG: 'GW Discharge (in/d)',
+                ET: 'ET (in/d)',
                 At: 'Snowdepth (in)',
-                mt: 'Snowmelt (in)',
-                Pe: 'Effective Precip (in)',
-                Q: 'Sim Flow (in)'
+                mt: 'Snowmelt (in/d)',
+                Pe: 'Effective Precip (in/d)',
+                Q: 'Sim Flow (in/d)'
             };
         },
 

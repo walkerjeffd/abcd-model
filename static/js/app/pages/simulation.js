@@ -191,10 +191,13 @@ define([
 
     addChart: function(variables) {
       console.log("Add Chart", variables);
-      var newChart = new ChartView({model: this.model, variables: variables, dispatcher: this.dispatcher});
+      var newChart = new ChartView({
+        model: this.model, 
+        variables: variables, 
+        dispatcher: this.dispatcher
+      });
       newChart.render().zoom(this.translate, this.scale);
       this.$('.chart-container').append(newChart.el);
-      // newChart;
       this.charts.push(newChart);
       this.render();
     },

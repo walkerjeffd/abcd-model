@@ -31,6 +31,7 @@ define([
         .yVariableLabels(this.model.variableLabels)
         // .color(this.model.colors)
         .yLabel('')
+        .zoomable(false)
         .onMousemove(function(x) { that.dispatcher.trigger('focus', x); })
         .onMouseout(function(x) { that.dispatcher.trigger('focus'); });
       this.render();

@@ -137,7 +137,7 @@ define([
         return null;
       }
 
-      this.model.addInputData(data);
+      this.model.set('input', data);
       this.dispatcher.trigger('status', 'Ready!');
     },
 

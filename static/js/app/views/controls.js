@@ -48,6 +48,7 @@ define([
 
     exportOutput: function() {
       console.log('Export');
+      this.dispatcher.trigger('export');
     },
 
     deleteApp: function() {

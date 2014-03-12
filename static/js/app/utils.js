@@ -88,8 +88,9 @@ define([
     };
   };
 
-  var convertObjectToCsv = function(objArray, header) {
-    var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+  var convertObjectToCsv = function(array, header) {
+    // console.log(typeof objArray);
+    // var array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
     header = header === undefined ? true : header;
     var str = '',
     line = '',
@@ -119,15 +120,13 @@ define([
   };
 
   var saveToCSVFile = function(obj, filename) {
-    var dateFormat = d3.time.format('%Y-%m-%d');
-    
-    // var csv = convertObjectToCsv(obj.map(function(d) {
-    //   return {Date: dateFormat(d.Date), Total: d.Flow, Baseflow: d.Base, Stormflow: d.Storm};
-    // }), true);
-
     var csvString = convertObjectToCsv(obj, true);
+    saveToFile(csvString, filename, 'text/csv');
+  };
 
-    saveToCSVFile(csvString, filename, 'text/csv');
+  var saveToJSONFile = function(obj, filename) {
+    var jsonString = JSON.stringify(obj);
+    saveToFile(jsonString, filename, 'application/json');
   };
 
   var saveToFile = function(obj, filename, mimeType) {      
@@ -137,9 +136,10 @@ define([
 
     var a = $('<a></a>')
       .attr('href', window.URL.createObjectURL(bb))
-      .attr('download', fileName);
+      .attr('download', filename);
 
     a[0].click();
+    console.log(a[0]);
   };
 
   return {
@@ -149,6 +149,7 @@ define([
     variance: variance,
     statsGOF: statsGOF,
     saveToFile: saveToFile,
-    saveToCSVFile: saveToCSVFile
+    saveToCSVFile: saveToCSVFile,
+    saveToJSONFile: saveToJSONFile
   };
 });

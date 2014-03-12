@@ -81,7 +81,7 @@ define([
           b = params.get('b'),
           c = params.get('c'),
           d = params.get('d'),
-          e = params.get('e'),
+          Mf = params.get('Mf'),
           Tb = params.get('Tb'),
           latitude = params.get('latitude');
 
@@ -99,7 +99,7 @@ define([
         SF = output[i].Tavg > Tb ? 0 : output[i].P;
         RF = output[i].P - SF;
 
-        mt = output[i].Tavg > Tb ? Math.min(At, e*(output[i].Tavg - Tb)) : 0;
+        mt = output[i].Tavg > Tb ? Math.min(At, Mf*(output[i].Tavg - Tb)) : 0;
         Pe = output[i].Tavg < Tb ? 0 : output[i].P + mt;
 
         W = S + Pe;

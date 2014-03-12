@@ -10,9 +10,9 @@
       </div>
       <hr>
       {% include 'tabs-parameters.html' %}
-      <hr>
+      <!--<hr>
       <h4>Model Diagram</h4>
-      <div id="diagram"></div>
+      <div id="diagram"></div>-->    
     </div>
     <div class="col-md-6">
       <div class="chart-container">
@@ -47,29 +47,29 @@
       <div class="modal-body">
         <h4>Select Variables</h4>
         <select name="select-add-chart" id="select-add-chart" multiple="multiple" size="10">
-          <option value="Tmin">Min Temperature (degC)</option>
-          <option value="Tmax">Max Temperature (degC)</option>
-          <option value="Tavg">Average Temperature (degC)</option>
-          <option value="Trng">Temperature Range (degC)</option>
-          <option value="PET">Potential Evapotranspiration (in)</option>
-          <option value="SR">Solar Radiation (in)</option>
+          <option value="Q">Simulated Streamflow (in)</option>
+          <option value="obsQ">Observed Streamflow (in)</option>
+          <option value="resQ">Residual Streamflow (Obs-Sim) (in)</option>
           <option value="P">Observed Precipitation (in)</option>
           <option value="Pe">Effective Precipitation (in)</option>
+          <option value="S">Soil Moisture (in)</option>
+          <option value="W">Available Water (in)</option>
+          <option value="Y">Evapotranspiration Opportunity (in)</option>
+          <option value="DR">Direct Runoff (in)</option>
+          <option value="PET">Potential Evapotranspiration (in)</option>
+          <option value="SR">Solar Radiation (in)</option>
+          <option value="ET">Evapotranspiration (in)</option>
+          <option value="G">Groundwater Storage (in)</option>
+          <option value="GR">Groundwater Recharge (in)</option>
+          <option value="dG">Groundwater Discharge (in)</option>
           <option value="RF">Rainfall (in)</option>
           <option value="mt">Snowmelt (in)</option>
           <option value="SF">Snowfall (in)</option>
           <option value="At">Snow Depth (in)</option>
-          <option value="obsQ">Observed Flow (in)</option>
-          <option value="Q">Simulated Flow (in)</option>
-          <option value="resQ">Residual Flow (Obs-Sim) (in)</option>
-          <option value="W">Available Water (in)</option>
-          <option value="S">Soil Moisture (in)</option>
-          <option value="Y">Evapotranspiration Opportunity (in)</option>
-          <option value="ET">Evapotranspiration (in)</option>
-          <option value="DR">Direct Runoff (in)</option>
-          <option value="G">Groundwater Storage (in)</option>
-          <option value="GR">Groundwater Recharge (in)</option>
-          <option value="dG">Groundwater Discharge (in)</option>
+          <option value="Tmin">Min Temperature (degC)</option>
+          <option value="Tmax">Max Temperature (degC)</option>
+          <option value="Tavg">Average Temperature (degC)</option>
+          <option value="Trng">Temperature Range (degC)</option>
         </select>
         <br>
         <p> </p>

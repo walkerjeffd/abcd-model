@@ -1593,11 +1593,9 @@ define([
 
         var mergeData = d3.merge([chartData, highlight, optimal]);
 
-        var yExtent;
-        if (mergeData.length == 1) {
+        var yExtent = d3.extent(mergeData, function(d) { return yValue(d); });
+        if (Math.abs(yExtent[1]-yExtent[0]) < 0.2) {
           yExtent = [d3.round(yValue(mergeData[0]), 1)-0.1, d3.round(yValue(mergeData[0]), 1)+0.1];
-        } else {
-          yExtent = d3.extent(mergeData, function(d) { return yValue(d); });  
         }
         
         yScale
@@ -1684,7 +1682,6 @@ define([
           .attr("r", 3)
           .attr("opacity", 1)
           .attr("fill", "#d62728");
-          // .on('click', click);
 
         highlightCircle.exit().remove();
 

@@ -78,7 +78,7 @@
         <p><em>Example File Format</em>:</p>
         <img src="{{ url_for('static', filename='media/input_file_example.png') }}" alt="Example input file">
         <h4>Need an Input File?</h4>
-        <p>Here is an input file for the Aberjona River: <a href="{{ url_for('static', filename='media/aberjona.csv') }}">aberjona.csv</a></p>
+        <p>Here is an input file for the Aberjona River: <a href="{{ url_for('static', filename='media/aberjona.csv') }}" download="aberjona.csv">aberjona.csv</a></p>
         <h4>Beware!</h4>
         <p>If using Excel, make sure the date format is set correctly. The default "mm/dd/yyyy" format cannot be used. To specify the correct date format, highlight the date column and set the cell format to Custom with type "yyyy-mm-dd", then save the file as a CSV.</p>
       </div>

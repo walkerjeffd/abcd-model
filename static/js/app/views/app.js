@@ -2,12 +2,13 @@ define([
     'jquery',
     'underscore',
     'backbone',
+    'app/utils',
     'app/pages/theory',
     'app/pages/data',
     'app/pages/simulation',
     'app/pages/calibration',
     'app/pages/optimization'
-], function ($, _, Backbone, TheoryPage, DataPage, SimulationPage, CalibrationPage, OptimizationPage) {
+], function ($, _, Backbone, Utils, TheoryPage, DataPage, SimulationPage, CalibrationPage, OptimizationPage) {
     'use strict';
 
     var AppView = Backbone.View.extend({
@@ -28,6 +29,7 @@ define([
             this.$status = this.$('#status');
             this.dispatcher.on('alert', this.showAlert, this);
             this.dispatcher.on('status', this.showStatus, this);
+            this.dispatcher.on('export-output', this.exportOutput, this);
 
             if (this.views[page]) {
                 this.pageView = new this.views[page]({
@@ -59,6 +61,10 @@ define([
             this.$alert.children('#message').text(message);
             this.$alert.slideDown(300);
             this.$alert.delay(delay).fadeOut();
+        },
+
+        exportOutput: function(data) {
+            Utils.saveToCSVFile(data, 'output.csv');
         }
     });
 

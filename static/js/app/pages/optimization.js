@@ -33,15 +33,17 @@ define([
 
       this.isRunning = false;
       this.tracking = false;
-      this.optimal = 0;
+      this.optimalSimIndex = null;
+      this.optimalParams = {};
       this.history = [];
       this.loadingExisting = false;
+      this.simModelReady = false;
 
       this.initSliders();
       this.initCharts();
 
       this.listenToOnce(this.model, 'sync', this.checkInput);
-      this.listenTo(this.model, 'change:input', this.checkInput);
+      this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.updateSliders);
       this.listenTo(this.model, 'change', this.render);
 
@@ -51,17 +53,21 @@ define([
     },
 
     checkInput: function(model, response, options) {
-      console.log('Checking input');
       model = model || this.model;
       if (model.get('input') && model.get('input').length === 0) {
         this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
       }
+    },
+
+    setInput: function(model, response, options) {
+      this.simModelReady = true;
       this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     clearHistory: function() {
       this.history.length = 0;
-      this.optimal = 0;
+      this.optimalSimIndex = null;
+      this.optimalParams = {};
       this.render();
     },
 
@@ -115,8 +121,9 @@ define([
     },
 
     loadOptimal: function() {
-      if (this.optimal) {
-        this.loadSimulation(_.omit(this.history[this.optimal], 'rmse'));
+      if (this.optimalSimIndex !== null) {
+        console.log('Loading optimal: ', this.optimalSimIndex);
+        this.loadSimulation(_.omit(this.history[this.optimalSimIndex], 'rmse'));
       }
     },
 
@@ -155,56 +162,82 @@ define([
 
     render: function() {
       var numberFormat = d3.format("4.4f");
-      if (this.model.get('input') && this.model.get('input').length) {
+      if (this.simModelReady) {
+        // run the model
         this.simModel.run(this.model);
 
-        var stats = this.compute_stats(this.simModel.output, 'obsQ', 'Q');
+        // compute stats of current run
+        var stats = Utils.statsGOF(this.simModel.output, 'obsQ', 'Q');
 
-        if (!this.tracking || (this.history.length === 0) || (this.history.length > 0 && (stats.rmse < this.history[this.optimal].rmse))) {
-          this.simModel.output.forEach(function(d) {
-            d.optQ = d.Q;
-          });
-        }
-
+        // create object for current simulation
         var currentSim = {
             a: this.model.get('a'),
             b: this.model.get('b'),
             c: this.model.get('c'),
             d: this.model.get('d'),
+            A0: this.model.get('A0'),
+            S0: this.model.get('S0'),
+            G0: this.model.get('G0'),
+            e: this.model.get('e'),
             rmse: stats.rmse
           };
 
         if (this.tracking && !this.loadingExisting) {
+          // tracking is on and not loading an existing simulation
+
+          // add current run to history
           this.history.push(currentSim);
 
-          if (stats.rmse < this.history[this.optimal].rmse) {
-            this.optimal = this.history.length-1;
+          if (this.history.length === 1 || currentSim.rmse < this.history[this.optimalSimIndex].rmse) {
+            // console.log('Setting optimal: ', this.history.length-1);
+            // if this is the only run so far
+            // or if current rmse is less than existing optimal rmse
+
+            // update optimal index 
+            this.optimalSimIndex = this.history.length-1;
+
+            // update optimal parameter set
+            this.optimalParams = this.history[this.optimalSimIndex];
+
+            // update optimal flow in simModel output data
+            this.simModel.output.forEach(function(d) {
+              d.optQ = d.Q;
+            });
           }
+        }
+
+        if (!this.tracking && this.history.length === 0) {
+          // if not tracking
+          // update optimal parameter set
+          this.optimalParams = currentSim;
+
+          this.simModel.output.forEach(function(d) {
+            d.optQ = d.Q;
+          });
         }
 
         d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
 
         if (this.loadingExisting) {
+          // toggle loadingExisting if it is on
           this.loadingExisting = false;
         }
-
-        this.optimalParams = this.history.length > 0 ? [this.history[this.optimal]] : [];
         
         d3.select("#chart-a").call(this.charts.A
           .data(this.history)
-          .optimal(this.optimalParams)
+          .optimal([this.optimalParams])
           .highlight([currentSim]));
         d3.select("#chart-b").call(this.charts.B
           .data(this.history)
-          .optimal(this.optimalParams)
+          .optimal([this.optimalParams])
           .highlight([currentSim]));
         d3.select("#chart-c").call(this.charts.C
           .data(this.history)
-          .optimal(this.optimalParams)
+          .optimal([this.optimalParams])
           .highlight([currentSim]));
         d3.select("#chart-d").call(this.charts.D
           .data(this.history)
-          .optimal(this.optimalParams)
+          .optimal([this.optimalParams])
           .highlight([currentSim]));
 
         this.$("#stat-n").text(this.history.length);
@@ -221,27 +254,6 @@ define([
       }
     },
 
-    compute_stats: function(data, obs, sim) {
-      var log10 = function(x) {
-        return Math.log(x)*Math.LOG10E;
-      };
-
-      var log_resid2 = data.map(function(d) {
-        return Math.pow(log10(d[obs]) - log10(d[sim]), 2);
-      });
-
-      var log_obs = _.pluck(data, obs).map(function(d) {
-        return log10(d);
-      });
-
-      var mse = Utils.mean(log_resid2);
-
-      return {
-        rmse: Math.sqrt(mse),
-        nse: 1 - mse / Utils.variance(log_obs)
-      };
-    },
-
     loadSimulation: function (params) {
       this.loadingExisting = true;
       this.setParams(params);
@@ -254,13 +266,12 @@ define([
       var that = this;
       
       var circleClick = function(d, i) {
-        console.log(d);
         that.loadSimulation(_.omit(d, 'rmse'));
       };
 
       this.charts.Line = Charts.ZoomableTimeseriesLineChart()
           .x(function(d) { return d.Date; })
-          .width(860)
+          .width(580)
           .height(200)
           .yVariables(['obsQ', 'optQ', 'Q'])
           .yVariableLabels(this.model.variableLabels)
@@ -271,11 +282,10 @@ define([
         this.charts.A = Charts.DottyChart()
           .x(function(d) { return d.a; })
           .y(function(d) { return d.rmse; })
-          .width(200)
-          .height(185)
+          .width(280)
+          .height(200)
           .r(2)
           .opacity(0.5)
-          // .fill(circleFill)
           .click(circleClick)
           .xDomain([0.98, 1])
           .yLabel('RMSE')
@@ -284,11 +294,10 @@ define([
         this.charts.B = Charts.DottyChart()
           .x(function(d) { return d.b; })
           .y(function(d) { return d.rmse; })
-          .width(200)
-          .height(185)
+          .width(280)
+          .height(200)
           .r(2)
           .opacity(0.5)
-          // .fill(circleFill)
           .click(circleClick)
           .xDomain([1, 10])
           .yLabel('RMSE')
@@ -297,11 +306,10 @@ define([
         this.charts.C = Charts.DottyChart()
           .x(function(d) { return d.c; })
           .y(function(d) { return d.rmse; })
-          .width(200)
-          .height(185)
+          .width(280)
+          .height(200)
           .r(2)
           .opacity(0.5)
-          // .fill(circleFill)
           .click(circleClick)
           .xDomain([0, 1])
           .yLabel('RMSE')
@@ -310,11 +318,10 @@ define([
         this.charts.D = Charts.DottyChart()
           .x(function(d) { return d.d; })
           .y(function(d) { return d.rmse; })
-          .width(200)
-          .height(185)
+          .width(280)
+          .height(200)
           .r(2)
           .opacity(0.5)
-          // .fill(circleFill)
           .click(circleClick)
           .xDomain([0, 0.2])
           .yLabel('RMSE')

@@ -9,6 +9,7 @@ define([
 
     events: {
       'click #btn-save': 'saveApp',
+      'click #btn-export': 'exportOutput',
       
     },
 
@@ -43,6 +44,10 @@ define([
           }
         }
       );
+    },
+
+    exportOutput: function() {
+      console.log('Export');
     },
 
     deleteApp: function() {

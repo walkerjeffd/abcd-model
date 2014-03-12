@@ -43,8 +43,6 @@ define([
       this.initCharts();
       this.initSliders();
 
-      // this.render();
-
       this.listenToOnce(this.model, 'sync', this.checkInput);
       this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.render);
@@ -110,7 +108,7 @@ define([
       if (this.model.get('input') && this.model.get('input').length > 0 && _.without(d3.keys(this.model.changedAttributes()), 'PET').length > 0) {
         this.simModel.run(this.model);
         
-        var stats = this.computeStats(this.simModel.output, 'obsQ', 'Q');
+        var stats = Utils.statsGOF(this.simModel.output, 'obsQ', 'Q');
         
         d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
         d3.select("#chart-scatter").call(this.charts.Scatter.data(this.simModel.output));
@@ -126,27 +124,6 @@ define([
           this.dispatcher.trigger('status', 'Ready!');
         }
       }
-    },
-
-    computeStats: function(data, obs, sim) {
-      var log10 = function(x) {
-        return Math.log(x)*Math.LOG10E;
-      };
-
-      var log_resid2 = data.map(function(d) {
-        return Math.pow(log10(d[obs]) - log10(d[sim]), 2);
-      });
-
-      var log_obs = _.pluck(data, obs).map(function(d) {
-        return log10(d);
-      });
-
-      var mse = Utils.mean(log_resid2);
-
-      return {
-        rmse: Math.sqrt(mse),
-        nse: 1 - mse / Utils.variance(log_obs)
-      };
     },
 
     initCharts: function() {

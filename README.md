@@ -46,10 +46,11 @@ Open a web browser, and navigate to <http://127.0.0.1:8000/>
 To Do 
 -----
 
-* GOF and MB to each page
+* export model, load from file
 * organize variable names in add chart list
-* add reset button to undo changes?
 * brush chart instead of zoom
+* GOF and MB to each page
+* add reset button to undo changes?
 * refactor sliders
 
 Done

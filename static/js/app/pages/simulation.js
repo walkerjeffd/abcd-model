@@ -51,7 +51,7 @@ define([
 
       this.simModel = new SimModel();
 
-      this.diagram = new Diagram({model: this.model, el: this.$('#diagram')});
+      // this.diagram = new Diagram({model: this.model, el: this.$('#diagram')});
 
       this.zoomTranslate = [0, 0];
       this.zoomScale = 1;

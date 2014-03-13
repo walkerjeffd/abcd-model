@@ -9,7 +9,7 @@ define([
 ], function ($, _, Backbone, d3, Charts, Utils, ControlsView) {
   'use strict';
 
-  var DataPage = Backbone.View.extend({
+  var SetupPage = Backbone.View.extend({
     charts: {},
 
     events: {
@@ -18,7 +18,7 @@ define([
     },
 
     initialize: function(options) {
-      console.log('Initialize: DataPage');
+      console.log('Initialize: SetupPage');
 
       this.dispatcher = options.dispatcher;
       
@@ -28,7 +28,8 @@ define([
       this.$('#instructions').html($('#modal-help .modal-body').html());
 
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
-      this.initDragDrop(this.$('#holder'));
+      this.initDragDrop(this.$('#holder-input'), this.loadData, this);
+      this.initDragDrop(this.$('#holder-load'), this.loadExistingModel, this);
       this.initCharts();      
 
       this.listenTo(this.model, 'change:input', this.render);
@@ -54,18 +55,16 @@ define([
       this.model.set('latitude', parseFloat(latitude));
     },
 
-    initDragDrop: function($drop) {
+    initDragDrop: function($drop, callback, context) {
       var that = this;
 
       console.log('Initializing: drag and drop holder');
       if (typeof window.FileReader === 'undefined') {
         alert('FileReader not supported!');
       }
-      
-      var el = '#holder';
 
       $drop.on('dragover', function () { $(this).addClass('hover'); return false; });
-      $drop.on('dragend', function () { $(this).removeClass('hover'); return false; });
+      $drop.on('dragleave dragend', function () { $(this).removeClass('hover'); return false; });
       $drop.on('drop', function (e) {
         console.log('Event: file dropped on holder');
         that.dispatcher.trigger('status', 'Loading file...');
@@ -91,7 +90,7 @@ define([
 
         reader.onload = function (event) {
           var data = parser(event.target.result);
-          that.loadData(data);
+          callback(data, context);
         };
 
         reader.readAsText(file);
@@ -100,8 +99,13 @@ define([
       });
     },
 
+    loadExistingModel: function(data, that) {
+      console.log(data);
+      that.model.loadFromFile(data);
+      that.updateModelInfo();
+    },
 
-    loadData: function(data) {
+    loadData: function(data, that) {
       var dateFormat = d3.time.format('%Y-%m-%d');
       
       var parsers = {
@@ -137,8 +141,8 @@ define([
         return null;
       }
 
-      this.model.set('input', data);
-      this.dispatcher.trigger('status', 'Ready!');
+      that.model.set('input', data);
+      that.dispatcher.trigger('status', 'Ready!');
     },
 
     render: function() {
@@ -191,5 +195,5 @@ define([
 
   });
 
-  return DataPage;
+  return SetupPage;
 });

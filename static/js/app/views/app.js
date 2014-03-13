@@ -6,20 +6,22 @@ define([
   'app/utils',
   'app/sim',
   'app/pages/theory',
-  'app/pages/data',
+  'app/pages/setup',
   'app/pages/simulation',
   'app/pages/calibration',
-  'app/pages/optimization'
-], function ($, _, Backbone, d3, Utils, SimModel, TheoryPage, DataPage, SimulationPage, CalibrationPage, OptimizationPage) {
+  'app/pages/optimization',
+  'app/pages/export'
+], function ($, _, Backbone, d3, Utils, SimModel, TheoryPage, SetupPage, SimulationPage, CalibrationPage, OptimizationPage, ExportPage) {
   'use strict';
 
   var AppView = Backbone.View.extend({
     views: {
       'theory': TheoryPage,
-      'data': DataPage,
+      'setup': SetupPage,
       'simulation': SimulationPage,
       'calibration': CalibrationPage,
-      'optimization': OptimizationPage
+      'optimization': OptimizationPage,
+      'export': ExportPage
     },
 
     initialize: function (options) {
@@ -32,8 +34,15 @@ define([
       this.dispatcher.on('alert', this.showAlert, this);
       this.dispatcher.on('status', this.showStatus, this);
       this.dispatcher.on('export', this.export, this);
+      this.dispatcher.on('checkInput', this.checkInput, this);
+      this.dispatcher.on('setInput', this.setInput, this);
       this.dispatcher.on('exportOutput', this.exportOutput, this);
       this.dispatcher.on('exportModel', this.exportModel, this);
+
+      if (page === "simulation" || page === "calibration" || page === "optimization") {
+        this.dispatcher.trigger('status', 'Initializing...');
+        this.listenToOnce(this.model, 'sync', this.checkInput);
+      }
 
       if (this.views[page]) {
         this.pageView = new this.views[page]({
@@ -109,7 +118,15 @@ define([
         };
       });
       Utils.saveToCSVFile(outputObj, 'output.csv');
-    }
+    },
+
+    checkInput: function(model, response, options) {
+      model = model || this.model;
+      if (model.get('input') && model.get('input').length === 0) {
+        this.dispatcher.trigger('alert', 'No input data found, go to Setup page and add input data', 'danger', 5000);
+      }
+    },
+
   });
 
   return AppView;

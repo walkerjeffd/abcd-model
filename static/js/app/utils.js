@@ -134,12 +134,16 @@ define([
 
     var bb = new Blob([obj], {type: 'text/plain'});
 
-    var a = $('<a></a>')
-      .attr('href', window.URL.createObjectURL(bb))
-      .attr('download', filename);
-
-    a[0].click();
-    console.log(a[0]);
+    if (window.navigator.msSaveBlob) {
+      window.navigator.msSaveBlob(bb, filename);
+    } else {
+      var a = $('<a></a>')
+        .attr('href', window.URL.createObjectURL(bb))
+        .attr('download', filename);
+      $('body').append(a);
+      a[0].click();  
+    }
+    
   };
 
   return {

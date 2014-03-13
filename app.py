@@ -21,9 +21,9 @@ def index():
 def theory():
     return render_template('theory.html')
 
-@app.route('/data.html')
-def datasets():
-    return render_template('data.html')
+@app.route('/setup.html')
+def setup():
+    return render_template('setup.html')
 
 @app.route('/simulation.html')
 def simulation():
@@ -36,6 +36,10 @@ def calibration():
 @app.route('/optimization.html')
 def optimization():
     return render_template('optimization.html')
+
+@app.route('/export.html')
+def export():
+    return render_template('export.html')
 
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'build':

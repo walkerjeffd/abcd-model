@@ -96,6 +96,7 @@ define([
     },
 
     loadFromFile: function(obj) {
+      obj = this.parse(obj);
       this.set(obj);
     }
   });

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% set active_page = "export" %}
+
+{% block title %}Optimization{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Export Model</h3>
+      <p>Click the Export button below to save your model to a text file. You can use this text file to reload the model from the Setup page.</p>
+      <p>The text file will contain the current input data, parameter values, watershed name, and latitude.</p>
+      <p><em>Note:</em> The file is written in <a href="http://en.wikipedia.org/wiki/JSON">JavaScript Object Notation (JSON)</a>. It can be edited directly to change the input data or parameter values, but I don't recommend it.</p>
+      <button class="btn btn-lg btn-primary" id="btn-export">Export</button>
+    </div>
+  </div>
+{% endblock %}

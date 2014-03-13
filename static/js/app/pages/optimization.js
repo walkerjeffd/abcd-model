@@ -41,8 +41,7 @@ define([
 
       this.initSliders();
       this.initCharts();
-
-      this.listenToOnce(this.model, 'sync', this.checkInput);
+      
       this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.updateSliders);
       this.listenTo(this.model, 'change', this.render);
@@ -50,13 +49,6 @@ define([
       this.render();
 
       this.dispatcher.trigger('status', 'Ready!');
-    },
-
-    checkInput: function(model, response, options) {
-      model = model || this.model;
-      if (model.get('input') && model.get('input').length === 0) {
-        this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
-      }
     },
 
     setInput: function(model, response, options) {

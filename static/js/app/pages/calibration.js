@@ -43,14 +43,17 @@ define([
       this.initCharts();
       this.initSliders();
 
-      this.listenToOnce(this.model, 'sync', this.checkInput);
-      this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.render);
+      this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.updateSliders);
 
       this.dispatcher.on('focus', this.focusTheory.bind(this));
       
       this.dispatcher.trigger('status', 'Ready!');
+    },
+
+    setInput: function(model, response, options) {
+      this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     focusTheory: function(x) {
@@ -73,17 +76,6 @@ define([
         this.soilChart.focus();
         this.gwChart.focus();
       }
-    },
-
-    checkInput: function(model, response, options) {
-      model = model || this.model;
-      if (model.get('input') && model.get('input').length === 0) {
-        this.dispatcher.trigger('alert', 'No input data found, go to Data tab and load new data', 'danger', 5000);
-      }
-    },
-
-    setInput: function(model, response, options) {
-      this.simModel.setInput(this.model.get('input'), this.model.get('latitude'));
     },
 
     initSliders: function() {

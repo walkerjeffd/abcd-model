@@ -1,10 +1,11 @@
 {% set navigation_bar = [
     ('/', 'index', 'Home'),
     ('/theory.html', 'theory', 'Theory'),
-    ('/data.html', 'data', 'Data'),
+    ('/setup.html', 'setup', 'Setup'),
     ('/simulation.html', 'simulation', 'Simulation'),
     ('/calibration.html', 'calibration', 'Calibration'),
-    ('/optimization.html', 'optimization', 'Optimization')
+    ('/optimization.html', 'optimization', 'Optimization'),
+    ('/export.html', 'export', 'Export')
 ] -%}
 {% set active_page = active_page|default('index') -%}
 <!DOCTYPE html>
@@ -35,7 +36,7 @@
     <script>var currentPage = "{{ active_page }}";</script>
   {% endblock %}
   </head>
-</head>
+
 <body>
   <!--[if lt IE 7]>
     <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
@@ -49,7 +50,7 @@
         %}><a href="{{ href|e }}">{{ caption|e }}</a></li>
       {% endfor %}
       </ul>
-      <p class="navbar-text pull-right" id="status">Initializing...</p>
+      <p class="navbar-text pull-right" id="status"></p>
     </div>
   </div>
 

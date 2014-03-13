@@ -1,16 +1,11 @@
 {% extends "base.html" %}
-{% set active_page = "data" %}
+{% set active_page = "setup" %}
 
-{% block title %}Data{% endblock %}
+{% block title %}Model Setup{% endblock %}
 
 {% block content %}
   <div class="row">
-    <div class="col-xs-12">
-      
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-3">
+    <div class="col-xs-3">
       <div id="controls" class="text-center"></div>
       <hr>
       <h4>Watershed Information</h4>
@@ -30,19 +25,25 @@
       </form>
       <hr>
       <div class="text-center">
-        <h4>Input File</h4>
-        <div id="holder">
+        <h4>Input Data File</h4>
+        <div class="dropzone" id="holder-input">
           <div style="padding-top: 40px; z-index: -1;">Drop CSV File Here</div>
         </div>
-        <div id="summary-input"></div>
       </div>
-
     </div>
-    <div class="col-md-9">
+    <div class="col-xs-6">
       <div id="instructions" style="display:none;"></div>
       <div id="chart-temp"></div>
       <div id="chart-precip"></div>
       <div id="chart-flow"></div>
+    </div>
+    <div class="col-xs-3">
+      <div class="text-center">
+        <h4>Load Existing Model</h4>
+        <div class="dropzone" id="holder-load">
+          <div style="padding-top: 40px; z-index: -1;">Drop JSON File Here</div>
+        </div>        
+      </div>
     </div>
   </div>
 {% endblock %}
@@ -56,13 +57,13 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h3>Datasets Help</h3>
+        <h3>Setup Help</h3>
       </div>
       <div class="modal-body">
         <h4>Instructions</h4>
         <ol>
           <li>Enter watershed name</li>
-          <li>Enter watershed latitude in degrees North (needed to compute potential evapotranspiration)</li>
+          <li>Enter watershed latitude in decimal degrees North (e.g. 42.4123)</li>
           <li>Drag and drop CSV input data file from your desktop</li>
           <li>Click Save button</li>
         </ol>
@@ -75,12 +76,13 @@
           <li><strong>Tmax_degC</strong>: Maximum air temperature (degrees C)</li>
           <li><strong>Flow_in</strong>: Streamfow (inches/day)</li>
         </ul>
-        <p><em>Example File Format</em>:</p>
+        <p><i>Example File Format</i>:</p>
         <img src="{{ url_for('static', filename='media/input_file_example.png') }}" alt="Example input file">
         <h4>Need an Input File?</h4>
-        <p>Here is an input file for the Aberjona River: <a href="{{ url_for('static', filename='media/aberjona.csv') }}" download="aberjona.csv">aberjona.csv</a></p>
+        <p>Here is an example input file for the <a href="http://waterdata.usgs.gov/usa/nwis/uv?01102500">Aberjona River</a> (MA): <a href="{{ url_for('static', filename='media/aberjona.csv') }}" download="aberjona.csv">aberjona.csv</a></p>
+        <p><i>Note</i>: If you are using Internet Explorer, you may need to change the file extension from ".xls" to ".csv"</p>
         <h4>Beware!</h4>
-        <p>If using Excel, make sure the date format is set correctly. The default "mm/dd/yyyy" format cannot be used. To specify the correct date format, highlight the date column and set the cell format to Custom with type "yyyy-mm-dd", then save the file as a CSV.</p>
+        <p>If you are using Excel, make sure the date format is set correctly. The default "mm/dd/yyyy" format cannot be used. To specify the correct date format, select the column of dates and set the cell format to "Custom" with type "yyyy-mm-dd", then save the file as CSV.</p>
       </div>
       <div class="modal-footer">
         <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>

@@ -12,20 +12,20 @@
       {% include "tabs-parameters.html" %}
       <hr>
       <div class="text-center">
-        <button class="btn btn-default" id="btn-random">Random</button>
-        <button class="btn btn-default" id="btn-optimal">Optimal</button>
-      </div>
-
-      <hr>
-      <div class="text-center">
-        <div class="btn-toolbar">
-          <div class="btn-group btn-group-sm">
-            <button class="btn btn-default" id="btn-start">Start</button>
-            <button class="btn btn-default" id="btn-stop">Stop</button>
-            <button class="btn btn-primary" id="btn-clear">Clear</button>
-            <button class="btn btn-danger" id="btn-track">Tracking Off</button>
-          </div>
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-default" id="btn-random">Random</button>
+          <button class="btn btn-info" id="btn-best">Best</button>
+        <button class="btn btn-primary" id="btn-clear">Clear</button>
+        <button class="btn btn-success" id="btn-track">Tracking On</button>
         </div>
+      </div>
+      <div class="text-center">
+      </div>
+      <hr>
+      <b>Monte Carlo:</b>
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-default" id="btn-start"><span class="glyphicon glyphicon-play"></span> Start</button>
+        <button class="btn btn-default" id="btn-stop"><span class="glyphicon glyphicon-stop"></span> Stop</button>
       </div>
     </div>
     <div class="col-md-6">
@@ -54,8 +54,16 @@
         <h4>Goodness-of-fit Statistics</h4>
         <ul class="list-unstyled">
           <li><strong># Simulations:</strong> <span id="stat-n">0</span></li>
-          <li><strong><abbr title="Root Mean Square Error">RMSE</abbr></strong>: <span id="stat-rmse"></span></li>
-          <li><strong><abbr title="Nash-Sutcliffe Efficiency">NSE</abbr></strong>: <span id="stat-nse"></span></li>
+          <li style="margin-top:5px;"><strong>Current</strong></li>
+          <ul class="list-unstyled" style="margin-left:10px;">
+            <li><strong><abbr title="Root Mean Square Error">RMSE</abbr></strong>: <span id="stat-rmse"></span></li>
+            <li><strong><abbr title="Nash-Sutcliffe Efficiency">NSE</abbr></strong>: <span id="stat-nse"></span></li>
+          </ul>
+          <li style="margin-top:5px;"><strong>Best</strong></li>
+          <ul class="list-unstyled" style="margin-left:10px;">
+            <li><strong><abbr title="Root Mean Square Error">RMSE</abbr></strong>: <span id="stat-best-rmse"></span></li>
+            <li><strong><abbr title="Nash-Sutcliffe Efficiency">NSE</abbr></strong>: <span id="stat-best-nse"></span></li>
+          </ul>
         </ul>
         <small>Note: All statistics computed from log-transformed variables</small>
       </div>

@@ -39,6 +39,8 @@ define([
       this.dispatcher.on('exportOutput', this.exportOutput, this);
       this.dispatcher.on('exportModel', this.exportModel, this);
 
+
+
       if (page === "simulation" || page === "calibration" || page === "optimization") {
         this.dispatcher.trigger('status', 'Initializing...');
         this.listenToOnce(this.model, 'sync', this.checkInput);
@@ -54,11 +56,16 @@ define([
         //   console.log('AppModel Event:', event, '|', response);
         // });
       }
-
+      
+      this.listenTo(this.model, 'invalid', this.invalidAlert);
       this.listenTo(this.model, 'sync', function(model) {
         model.isNewModel = false;
       });
 
+    },
+
+    invalidAlert: function(model, error) {
+      this.dispatcher.trigger('alert', error, 'danger');
     },
 
     showStatus: function(message) {
@@ -108,13 +115,8 @@ define([
           Runoff_in: d.DR,
           GWRecharge_in: d.GR,
           Groundwater_in: d.G,
-          GWDischarge_in: d.dG,
+          GWDischarge_in: d.GD,
           Flow_in: d.Q,
-          EffectivePrecip_in: d.Pe,
-          Rainfall_in: d.RF,
-          Snowfall_in: d.SF,
-          Snowdepth_in: d.At,
-          Snowmelt_in: d.mt
         };
       });
       Utils.saveToCSVFile(outputObj, 'output.csv');

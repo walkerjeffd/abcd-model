@@ -1,7 +1,6 @@
       <ul class="nav nav-tabs">
         <li class="active"><a href="#tab-soil" data-toggle="tab">Soil</a></li>
         <li><a href="#tab-gw" data-toggle="tab">Groundwater</a></li>
-        <li><a href="#tab-snow" data-toggle="tab">Snow</a></li>
       </ul>
       <div class="tab-content">
         <div class="tab-pane tab-param active" id="tab-soil">
@@ -29,13 +28,5 @@
             <dd><input class="slider" type="range" min="0" max="0.2" step="0.001" value="0.1" name="d"/></dd>
           </dl>
           <div id="chart-gw"></div>
-        </div><div class="tab-pane tab-param" id="tab-snow">
-          <dl>
-            <dt>Initial Snow Depth: <span id="param-A0"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="5" step="0.1" value="1" name="A0"/></dd>
-
-            <dt>Melt Factor: <span id="param-Mf"></span></dt>
-            <dd><input class="slider" type="range" min="0" max="2" step="0.01" value="0.1" name="Mf"/></dd>
-          </dl>
         </div>
       </div>

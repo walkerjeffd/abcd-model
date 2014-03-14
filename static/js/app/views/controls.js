@@ -9,14 +9,12 @@ define([
 
     events: {
       'click #btn-save': 'saveApp',
-      'click #btn-export': 'exportOutput',
-      
+      'click #btn-export': 'exportOutput'
     },
 
     initialize: function (options) {
       this.dispatcher = options.dispatcher;
       $('#btn-delete').on('click', this.deleteApp.bind(this));
-      this.listenTo(this.model, 'invalid', this.invalidAlert);
       
       this.render();
     },
@@ -25,9 +23,6 @@ define([
       this.$el.html(this.template());
     },
 
-    invalidAlert: function(model, error) {
-      this.dispatcher.trigger('alert', error, 'danger');
-    },
 
     saveApp: function() {
       console.log('Saving...');

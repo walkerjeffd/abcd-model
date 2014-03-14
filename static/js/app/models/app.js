@@ -12,29 +12,22 @@ define([
       watershedName: '',
       input: [],
       latitude: null,
-      Tb: 0,
-      A0: 0,
       S0: 2.0,
       G0: 2.0,
       a: 1,
       b: 5,
       c: 0.5,
       d: 0.1,
-      Mf: 0.08,
       PET: 1
     },
 
     validate: function(attrs, options) {
-      if (this.isNew()) {
-        return;
-      }
       if ((attrs.latitude < 20) || (attrs.latitude > 50)) {
         return 'Latitude must be between 20 and 50 degrees North';
       }
       if (attrs.latitude === null || !isFinite(attrs.latitude)) {
         return 'Latitude must be a number between 20 and 50 degNorth in decimal degrees (e.g. 42.4)';
       }
-
       if (attrs.input.length === 0) {
         return 'Input data is missing';
       }
@@ -54,28 +47,23 @@ define([
       this.variableLabels = {
         Tmin: 'Min Temp (degC)',
         Tmax: 'Max Temp (degC)',
+        Trng: 'Temp Range (degC)',
+        Tavg: 'Avg Temp (degC)',
         P: 'Precip (in/d)',
         obsQ: 'Observed Streamflow (in/d)',
         resQ: 'Residual Streamflow (in/d)',
         optQ: 'Optimal Streamflow (in/d)',
-        Trng: 'Temp Range (degC)',
-        Tavg: 'Avg Temp (degC)',
-        SR: 'Solar (in/d)',
-        PET: 'PET (in/d)',
-        SF: 'Snowfall (in/d)',
-        RF: 'Rainfall (in/d)',
+        Q: 'Simulated Streamflow (in/d)',
         W: 'Available Water (in)',
         S: 'Soil Moisture (in)',
+        SR: 'Solar (in/d)',
+        PET: 'PET (in/d)',
+        ET: 'ET (in/d)',
         G: 'Groundwater (in)',
         Y: 'ET Opportunity (in/d)',
         GR: 'GW Recharge (in/d)',
         DR: 'Direct Runoff (in/d)',
-        dG: 'GW Discharge (in/d)',
-        ET: 'ET (in/d)',
-        At: 'Snowdepth (in)',
-        mt: 'Snowmelt (in/d)',
-        Pe: 'Effective Precip (in/d)',
-        Q: 'Simulated Streamflow (in/d)'
+        GD: 'GW Discharge (in/d)',
       };
     },
 

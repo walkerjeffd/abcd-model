@@ -6,7 +6,19 @@
 {% block content %}
   <div class="row">
     <div class="col-xs-3">
-      <div id="controls" class="text-center"></div>
+      <div id="controls" class="text-center">
+        <div class="btn-toolbar">
+          <button class="btn btn-primary" id="btn-save">
+            <span class="glyphicon glyphicon-floppy-disk"></span> Save
+          </button>
+          <button class="btn btn-danger" data-target="#modal-delete" data-toggle="modal" id="btn-delete-ode">
+            <span class="glyphicon glyphicon-trash"></span> Delete
+          </button>
+          <button class="btn btn-success" data-target="#modal-help" data-toggle="modal">
+            <span class="glyphicon glyphicon-question-sign"></span> Help
+          </button>
+        </div>
+      </div>
       <hr>
       <h4>Watershed Information</h4>
       <form class="form-horizontal" role="form">
@@ -30,19 +42,37 @@
           <div style="padding-top: 40px; z-index: -1;">Drop CSV File Here</div>
         </div>
       </div>
+      <hr>
+      <div class="text-center">
+        <button class="btn btn-default" data-target="#modal-load" data-toggle="modal" id="btn-load">Load Existing Model</button>
+      </div>
     </div>
-    <div class="col-xs-6">
+    <div class="col-xs-9">
       <div id="instructions" style="display:none;"></div>
       <div id="chart-temp"></div>
       <div id="chart-precip"></div>
       <div id="chart-flow"></div>
     </div>
-    <div class="col-xs-3">
-      <div class="text-center">
-        <h4>Load Existing Model</h4>
-        <div class="dropzone" id="holder-load">
-          <div style="padding-top: 40px; z-index: -1;">Drop JSON File Here</div>
-        </div>        
+  </div>
+
+  <div class="modal fade" role="dialog" id="modal-load">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>Load Existing Model</h3>
+        </div>
+        <div class="modal-body">
+          <div class="text-center">
+            <h4>Load Existing Model</h4>
+            <div class="dropzone" id="holder-load">
+              <div style="padding-top: 40px; z-index: -1;">Drop JSON File Here</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
+        </div>
       </div>
     </div>
   </div>

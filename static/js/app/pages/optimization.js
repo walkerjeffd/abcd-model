@@ -19,7 +19,7 @@ define([
       'click #btn-clear': 'clearHistory',
       'click #btn-start': 'startLoop',
       'click #btn-stop': 'stopLoop',
-      'click #btn-optimal': 'loadOptimal'
+      'click #btn-best': 'loadBest'
     },
 
     initialize: function(options) {
@@ -32,9 +32,9 @@ define([
       this.simModel = new SimModel();
 
       this.isRunning = false;
-      this.tracking = false;
-      this.optimalSimIndex = null;
-      this.optimalParams = {};
+      this.tracking = true;
+      this.bestSimIndex = null;
+      this.bestParams = {};
       this.history = [];
       this.loadingExisting = false;
       this.simModelReady = false;
@@ -58,8 +58,8 @@ define([
 
     clearHistory: function() {
       this.history.length = 0;
-      this.optimalSimIndex = null;
-      this.optimalParams = {};
+      this.bestSimIndex = null;
+      this.bestParams = {};
       this.render();
     },
 
@@ -112,10 +112,10 @@ define([
       }
     },
 
-    loadOptimal: function() {
-      if (this.optimalSimIndex !== null) {
-        console.log('Loading optimal: ', this.optimalSimIndex);
-        this.loadSimulation(_.omit(this.history[this.optimalSimIndex], 'rmse'));
+    loadBest: function() {
+      if (this.bestSimIndex !== null) {
+        console.log('Loading best: ', this.bestSimIndex);
+        this.loadSimulation(_.omit(this.history[this.bestSimIndex], 'rmse'));
       }
     },
 
@@ -171,7 +171,8 @@ define([
             S0: this.model.get('S0'),
             G0: this.model.get('G0'),
             e: this.model.get('e'),
-            rmse: stats.rmse
+            rmse: stats.rmse,
+            nse: stats.nse
           };
 
         if (this.tracking && !this.loadingExisting) {
@@ -180,16 +181,16 @@ define([
           // add current run to history
           this.history.push(currentSim);
 
-          if (this.history.length === 1 || currentSim.rmse < this.history[this.optimalSimIndex].rmse) {
+          if (this.history.length === 1 || currentSim.rmse < this.history[this.bestSimIndex].rmse) {
             // console.log('Setting optimal: ', this.history.length-1);
             // if this is the only run so far
             // or if current rmse is less than existing optimal rmse
 
             // update optimal index 
-            this.optimalSimIndex = this.history.length-1;
+            this.bestSimIndex = this.history.length-1;
 
             // update optimal parameter set
-            this.optimalParams = this.history[this.optimalSimIndex];
+            this.bestParams = this.history[this.bestSimIndex];
 
             // update optimal flow in simModel output data
             this.simModel.output.forEach(function(d) {
@@ -201,7 +202,7 @@ define([
         if (!this.tracking && this.history.length === 0) {
           // if not tracking
           // update optimal parameter set
-          this.optimalParams = currentSim;
+          this.bestParams = currentSim;
 
           this.simModel.output.forEach(function(d) {
             d.optQ = d.Q;
@@ -217,24 +218,27 @@ define([
         
         d3.select("#chart-a").call(this.charts.A
           .data(this.history)
-          .optimal([this.optimalParams])
+          .optimal([this.bestParams])
           .highlight([currentSim]));
         d3.select("#chart-b").call(this.charts.B
           .data(this.history)
-          .optimal([this.optimalParams])
+          .optimal([this.bestParams])
           .highlight([currentSim]));
         d3.select("#chart-c").call(this.charts.C
           .data(this.history)
-          .optimal([this.optimalParams])
+          .optimal([this.bestParams])
           .highlight([currentSim]));
         d3.select("#chart-d").call(this.charts.D
           .data(this.history)
-          .optimal([this.optimalParams])
+          .optimal([this.bestParams])
           .highlight([currentSim]));
 
         this.$("#stat-n").text(this.history.length);
         this.$("#stat-rmse").text(numberFormat(stats.rmse));
         this.$("#stat-nse").text(numberFormat(stats.nse));
+
+        this.$("#stat-best-rmse").text(numberFormat(this.bestParams.rmse));
+        this.$("#stat-best-nse").text(numberFormat(this.bestParams.nse));
       }
 
       if (!this.isRunning) {
@@ -268,8 +272,8 @@ define([
           .yVariables(['obsQ', 'optQ', 'Q'])
           .yVariableLabels({
             'obsQ': 'Obs Flow (in/d)',
-            'optQ': 'Optimal Sim Flow (in/d)',
-            'Q': 'Current Sim Flow (in/d)'
+            'optQ': 'Best Sim Flow (in/d)',
+            'Q': 'Sim Flow (in/d)'
           })
           .yDomain([0.001, 2])
           .yScale(d3.scale.log())

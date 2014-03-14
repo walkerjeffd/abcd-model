@@ -137,9 +137,7 @@ define([
           endSoil = data[data.length-1]['S'],
           initGW = this.model.get('G0'),
           endGW = data[data.length-1]['G'],
-          initSnow = this.model.get('A0'),
-          endSnow = data[data.length-1]['At'],
-          netStorage = (endSoil+endGW+endSnow) - (initSoil+initGW+initSnow),
+          netStorage = (endSoil+endGW) - (initSoil+initGW),
           err = netStorage + sumOutflow - sumPrecip;
 
       return {

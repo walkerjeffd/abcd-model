@@ -4,9 +4,8 @@ define([
   'backbone',
   'd3',
   'app/charts',
-  'app/utils',
-  'app/views/controls'
-], function ($, _, Backbone, d3, Charts, Utils, ControlsView) {
+  'app/utils'
+], function ($, _, Backbone, d3, Charts, Utils) {
   'use strict';
 
   var SetupPage = Backbone.View.extend({
@@ -14,7 +13,9 @@ define([
 
     events: {
       'keyup #input-name': 'updateName',
-      'keyup #input-latitude': 'updateLatitude'
+      'keyup #input-latitude': 'updateLatitude',
+      'click #btn-save': 'saveApp',
+      'click #btn-delete': 'deleteApp'
     },
 
     initialize: function(options) {
@@ -27,8 +28,7 @@ define([
 
       this.$('#instructions').html($('#modal-help .modal-body').html());
 
-      this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
-      this.initDragDrop(this.$('#holder-input'), this.loadData, this);
+      this.initDragDrop(this.$('#holder-input'), this.loadInputData, this);
       this.initDragDrop(this.$('#holder-load'), this.loadExistingModel, this);
       this.initCharts();      
 
@@ -37,6 +37,41 @@ define([
 
       this.render();
       this.dispatcher.trigger('status', 'Ready!');
+    },
+
+    saveApp: function() {
+      console.log('Saving...');
+      var that = this;
+      console.log(this.model);
+      this.model.save({},
+        {
+          success: function() {
+            that.dispatcher.trigger('alert', 'Model saved', 'success');
+            that.dispatcher.trigger('status', 'Ready!');
+          },
+          error: function(e) {
+            that.dispatcher.trigger('alert', 'Model save failed!', 'error');
+            that.dispatcher.trigger('status', 'Unsaved changes...');
+          }
+        }
+      );
+    },
+
+    exportOutput: function() {
+      console.log('Export');
+      this.dispatcher.trigger('exportOutput');
+    },
+
+    deleteApp: function() {
+      console.log('Deleting...');
+      this.model.destroy({
+        success: function(model, response, options) {
+          window.location.reload();
+        },
+        error: function(model, response, options) {
+          console.log('error: ', response);
+        }
+      });
     },
 
     updateModelInfo: function() {
@@ -55,7 +90,7 @@ define([
       this.model.set('latitude', parseFloat(latitude));
     },
 
-    initDragDrop: function($drop, callback, context) {
+    initDragDrop: function(el, callback, context) {
       var that = this;
 
       console.log('Initializing: drag and drop holder');
@@ -63,9 +98,9 @@ define([
         alert('FileReader not supported!');
       }
 
-      $drop.on('dragover', function () { $(this).addClass('hover'); return false; });
-      $drop.on('dragleave dragend', function () { $(this).removeClass('hover'); return false; });
-      $drop.on('drop', function (e) {
+      el.on('dragover', function () { $(this).addClass('hover'); return false; });
+      el.on('dragleave dragend', function () { $(this).removeClass('hover'); return false; });
+      el.on('drop', function (e) {
         console.log('Event: file dropped on holder');
         that.dispatcher.trigger('status', 'Loading file...');
         $(this).removeClass('hover');
@@ -105,7 +140,7 @@ define([
       that.updateModelInfo();
     },
 
-    loadData: function(data, that) {
+    loadInputData: function(data, that) {
       var dateFormat = d3.time.format('%Y-%m-%d');
       
       var parsers = {
@@ -149,7 +184,7 @@ define([
       console.log('Rendering...');
       this.dispatcher.trigger('status', 'Rendering...');
 
-      if (this.model.get('input') && this.model.get('input').length) {
+      if (this.model.get('input') && this.model.get('input').length > 0) {
         console.log('Showing charts');
         this.$('#instructions').hide();
         d3.select('#chart-temp').call(this.charts.Temp.data(this.model.get('input')));

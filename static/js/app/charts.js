@@ -1594,8 +1594,8 @@ define([
         var mergeData = d3.merge([chartData, highlight, optimal]);
 
         var yExtent = d3.extent(mergeData, function(d) { return yValue(d); });
-        if (Math.abs(yExtent[1]-yExtent[0]) < 0.2) {
-          yExtent = [d3.round(yValue(mergeData[0]), 1)-0.1, d3.round(yValue(mergeData[0]), 1)+0.1];
+        if (Math.abs(yExtent[1]-yExtent[0]) < 0.1) {
+          yExtent = [d3.min([yExtent[0], d3.round(yValue(mergeData[0]), 1)-0.05]), d3.max([yExtent[1], d3.round(yValue(mergeData[0]), 1)+0.05])];
         }
         
         yScale

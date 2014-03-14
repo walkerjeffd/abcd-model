@@ -55,9 +55,9 @@ define([
         Tmin: 'Min Temp (degC)',
         Tmax: 'Max Temp (degC)',
         P: 'Precip (in/d)',
-        obsQ: 'Obs Flow (in/d)',
-        resQ: 'Residual Flow (in/d)',
-        optQ: 'Optimal Flow (in/d)',
+        obsQ: 'Observed Streamflow (in/d)',
+        resQ: 'Residual Streamflow (in/d)',
+        optQ: 'Optimal Streamflow (in/d)',
         Trng: 'Temp Range (degC)',
         Tavg: 'Avg Temp (degC)',
         SR: 'Solar (in/d)',
@@ -75,7 +75,7 @@ define([
         At: 'Snowdepth (in)',
         mt: 'Snowmelt (in/d)',
         Pe: 'Effective Precip (in/d)',
-        Q: 'Sim Flow (in/d)'
+        Q: 'Simulated Streamflow (in/d)'
       };
     },
 

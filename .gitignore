@@ -9,3 +9,7 @@
 build
 boilerplate/
 fonts/
+app-build/
+nw/
+
+r.js

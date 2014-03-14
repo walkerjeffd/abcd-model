@@ -214,7 +214,6 @@ define([
         .onMouseout(function(x) { this.dispatcher.trigger('focus'); }.bind(this))
         .onZoom(function(translate, scale) { this.zoomCharts(translate, scale); }.bind(this));
 
-      this.addChart(['Pe']);
     }
 
   });

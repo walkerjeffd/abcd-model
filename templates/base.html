@@ -32,7 +32,7 @@
     </style>
 
     <script src="{{ url_for('static', filename='js/libs/modernizr.min.js') }}"></script>
-    <script data-main="{{ url_for('static', filename='js/main') }}" src="{{ url_for('static', filename='js/libs/require.min.js') }}"></script>
+    <script data-main="{{ url_for('static', filename='js/main.js') }}" src="{{ url_for('static', filename='js/libs/require.min.js') }}"></script>
     <script>var currentPage = "{{ active_page }}";</script>
   {% endblock %}
   </head>

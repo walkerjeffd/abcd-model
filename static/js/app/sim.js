@@ -82,7 +82,8 @@ define([
           c = params.get('c'),
           d = params.get('d'),
           Mf = params.get('Mf'),
-          Tb = params.get('Tb'),
+          // Tb = params.get('Tb'),
+          Tb = 0,
           latitude = params.get('latitude');
 
       for (var i = 0, len = output.length; i < len; i++) {
@@ -92,15 +93,14 @@ define([
           At = params.get('A0');
           S = params.get('S0');
           G = params.get('G0');
-        } else {
-          At = Math.max((output[i].Tavg > Tb ? At - mt : At - mt + output[i].P), 0);
-        }
+        } 
 
         SF = output[i].Tavg > Tb ? 0 : output[i].P;
         RF = output[i].P - SF;
 
         mt = output[i].Tavg > Tb ? Math.min(At, Mf*(output[i].Tavg - Tb)) : 0;
-        Pe = output[i].Tavg < Tb ? 0 : output[i].P + mt;
+        At = Math.max(At - mt + SF, 0);
+        Pe = RF + mt;
 
         W = S + Pe;
         Y = (W + b)/(2 * a) - Math.sqrt(Math.pow((W + b)/(2 * a),2) - (W * b / a));

@@ -266,7 +266,11 @@ define([
           .width(580)
           .height(200)
           .yVariables(['obsQ', 'optQ', 'Q'])
-          .yVariableLabels(this.model.variableLabels)
+          .yVariableLabels({
+            'obsQ': 'Obs Flow (in/d)',
+            'optQ': 'Optimal Sim Flow (in/d)',
+            'Q': 'Current Sim Flow (in/d)'
+          })
           .yDomain([0.001, 2])
           .yScale(d3.scale.log())
           .color(this.model.colors);

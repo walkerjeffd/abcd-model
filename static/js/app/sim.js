@@ -76,9 +76,9 @@ define([
         W = S + output[i].P;
         Y = (W + b)/(2 * a) - Math.sqrt(Math.pow((W + b)/(2 * a),2) - (W * b / a));
         S = Y * Math.exp(-output[i].PET / b);
-        ET = Math.max(Y - S, 0);
-        GR = Math.max(c * (W - Y), 0);
-        DR = Math.max((1 - c) * (W - Y), 0);
+        ET = Y - S;
+        GR = c * (W - Y);
+        DR = (1 - c) * (W - Y);
 
         WGW = GR + G; // available groundwater
         G = WGW / (1 + d);

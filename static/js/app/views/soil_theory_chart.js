@@ -24,10 +24,10 @@ define([
         .width(width)
         .height(height)
         .funcs([
-          {label: 'Soil Moisture', name: 'S', func: this.equations.S },
-          {label: 'ET', name: 'ET', func: this.equations.ET },
-          {label: 'Runoff', name: 'DR', func: this.equations.DR },
-          {label: 'Recharge', name: 'GR', func: this.equations.GR }
+          {label: 'Soil Moisture[t]', name: 'S', func: this.equations.S },
+          {label: 'ET[t]', name: 'ET', func: this.equations.ET },
+          {label: 'Runoff[t]', name: 'DR', func: this.equations.DR },
+          {label: 'Recharge[t]', name: 'GR', func: this.equations.GR }
         ])
         .colors(this.colors)
         .xLabel('Soil Moisture[t-1] + Precip[t]')

@@ -19,7 +19,7 @@ define([
       this.dispatcher = options.dispatcher;
 
       this.diagram = new Diagram({model: this.model, el: this.$('#diagram')});
-      this.soilChart = new SoilTheoryChart({model: this.model, id: 'chart-soil', height: 300, width: 390});
+      this.soilChart = new SoilTheoryChart({model: this.model, id: 'chart-soil', height: 310, width: 400});
       this.gwChart = new GwTheoryChart({model: this.model, id: 'chart-gw', height: 300, width: 390});
 
       this.initSliders();

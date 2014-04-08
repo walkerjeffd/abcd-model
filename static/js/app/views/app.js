@@ -31,6 +31,7 @@ define([
 
       this.$alert = this.$('#alert');
       this.$status = this.$('#status');
+
       this.dispatcher.on('alert', this.showAlert, this);
       this.dispatcher.on('status', this.showStatus, this);
       this.dispatcher.on('export', this.export, this);
@@ -38,8 +39,6 @@ define([
       this.dispatcher.on('setInput', this.setInput, this);
       this.dispatcher.on('exportOutput', this.exportOutput, this);
       this.dispatcher.on('exportModel', this.exportModel, this);
-
-
 
       if (page === "simulation" || page === "calibration" || page === "optimization") {
         this.dispatcher.trigger('status', 'Initializing...');

@@ -15,23 +15,33 @@
 {% endblock %}
 
 {% block content %}
-  <h1>Model Theory</h1>
-  <hr>
   <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-12">
       <h3>Description</h3>
-      <p>The ABCD water balance model is a simple hydrologic model for simulating streamflow in response to precipitation and evapotranspiration.</p>
-      <p>Water storage consists of 1) soil moisture and 2) groundwater. Excess soil moisture is routed to groundwater as recharge or streamflow as surface runoff. Groundwater storage acts as a linear reservoir and discharges to streamflow.</p>
-      <p> The total streamflow is comprised of surface runoff from the soil moisture compartment and discharge from the groundwater compartment.</p>
-      <p>There are four parameters governing the model behavior: a, b, c, d. The values of these parameters can be estimated from physical characteristics of the watershed (i.e. soil properties), or by model calibration.</p>
-      <p>The model runs on a daily time step and requires input timeseries of precipitation and potential evapotranspiration (PET). The PET timeseries is often computed using Hargreave's equation based on daily dewpoint, minimum and maximum temperatures.</p>
-    </div>
-    <div class="col-md-5">
-      <h3>Diagram</h3>
-      <div id="diagram"></div>
+      <p>The ABCD water balance model is a simple hydrologic model for simulating streamflow in response to precipitation and <a href="http://en.wikipedia.org/wiki/Potential_evaporation" target="_blank">potential evapotranspiration</a> developed by <a href="http://pubs.er.usgs.gov/publication/70046351" target="_blank">Thomas (1981)</a>.</p>
+      <p>The model is comprised of two storage compartments: soil moisture and groundwater. The soil moisture gains water from precipitation and loses water to evapotranspiration (ET), surface runoff and groundwater recharge. The groundwater compartment gains water from recharge and loses water as discharge. The total streamflow is the sum of surface runoff from the soil moisture and groundwater discharge.</p>
+      <div id="diagram" class="text-center"></div>
+      <h3>Input Data</h3>
+      <p>The model runs on a daily time step and requires input timeseries of precipitation, minimum and maximum air temperature, and observed streamflow. The air temperature data are used to compute PET using <a data-toggle="modal" href="#modal-pet">the method described by Shuttleworth (1993)</a>. More information about the input data can be found on the <a href="/setup.html">Setup</a> page.</p>
+      <h3>Parameters</h3>
+      <p>There are four parameters governing the model behavior:</p>
+      <ul>
+        <li><b>a</b> controls the amount of runoff and recharge that occurs when the soils are under-saturated.</li>
+        <li><b>b</b> controls the saturation level of the soils.</li>
+        <li><b>c</b> defines the ratio of groundwater recharge to surface runoff.</li>
+        <li><b>d</b> controls the rate of groundwater discharge.</li>
+      </ul>
+      <h3>Mass Balance Diagrams</h3>
+      <p>The model equations are represented by the interactive visualizations shown below. Each visualization demonstrates how the model computes the storage terms and fluxes for each time step. The diagrams are based on a mass balance:</p>
+      $$Storage_{t} + \sum{Outflow_t} = Storage_{t-1} + \sum{Inflow_t}$$
+      <p>This equation means that the sum of remaining storage and total outflow must equal the sum of initial storage and total inflow.</p>
+      <p>For the soil moisture compartment, the mass balance equation is:</p>
+      $$Soil Moisture_t + ET_t + Runoff_t + Recharge_t = Soil Moisture_{t-1} + Precip_t$$
+      <p>For the groundwater compartment, the mass balance equation is:</p>
+      $$Groundwater_t + Discharge_t = Groundwater_{t-1} + Recharge_t$$
     </div>
   </div>
-  <hr>  
+  <hr>
   <div class="row">
     <div class="col-sm-6 col-md-3">
       <h3>Soil Moisture</h3>
@@ -49,36 +59,45 @@
         <dd><input class="slider" type="range" min="0" max="2" step="0.1" value="1" name="PET" /></dd>
       </dl>
     </div>
-    <div class="col-md-9 col-lg-4">
+    <div class="col-md-9 col-lg-5">
       <div id="chart-soil"></div>
     </div>
-    <div class="col-sm-9 col-md-12 col-lg-5">
-      <ul class="nav nav-tabs">
-        <li class="active"><a href="#tab-soil-variable" data-toggle="tab">Variables</a></li>
-        <li><a href="#tab-soil-eqn" data-toggle="tab">Equations</a></li>
-      </ul>
-      <div class="tab-content">
-        <div class="tab-pane active" id="tab-soil-variable">
-          $$\begin{array} \\
-            W_t &= \text{Available Soil Water} \\
-            Y_t &= \text{Evapotranspiration Potential} \\
-            P_t &= \text{Precipitation} \\
-            S_t &= \text{Soil Moisture} \\
-            PET_t &= \text{Potential Evapotranspiration} \\
-            ET_t &= \text{Actual Evapotranspiration} \\
-            DR_t &= \text{Direct Runoff from Soil to Streamflow} \\
-            GR_t &= \text{Groundwater Recharge from Soil}
-          \end{array}$$
-        </div>
-        <div class="tab-pane" id="tab-soil-eqn">
-          $$\begin{array} \\
-          W_t &= S_{t-1} + P_t = S_t + ET_t + GR_t + DR_t \\
-          Y_t &= S_t + ET_t = \frac{W_t+b}{2a} - \sqrt{\left(\frac{W_t+b}{2a}\right)^2 - \frac{bW_t}{a}} \\
-          S_t &= Y_te^{-PET_t/b} \\
-          ET_t &= Y_t\left(1-e^{-PET_t/b}\right) \\
-          DR_t &= (1-c)*(W_t - Y_t) \\
-          GR_t &= c*(W_t - Y_t) 
-          \end{array}$$
+  </div>
+  <div class="panel-group" id="eqn-soil">
+    <div class="panel">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#eqn-soil" href="#collapseSoil">
+            Show Equations <span class="caret"></span>
+          </a>
+        </h4>
+      </div>
+      <div id="collapseSoil" class="panel-collapse collapse">
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-4">
+              $$\begin{array} \\
+                W_t &= \text{Available Soil Water} \\
+                Y_t &= \text{Evapotranspiration Potential} \\
+                P_t &= \text{Precipitation} \\
+                S_t &= \text{Soil Moisture} \\
+                PET_t &= \text{Potential Evapotranspiration} \\
+                ET_t &= \text{Actual Evapotranspiration} \\
+                DR_t &= \text{Direct Runoff} \\
+                GR_t &= \text{Groundwater Recharge}
+              \end{array}$$
+            </div>
+            <div class="col-md-4">
+              $$\begin{array} \\
+              W_t &= S_{t-1} + P_t = S_t + ET_t + GR_t + DR_t \\
+              Y_t &= S_t + ET_t = \frac{W_t+b}{2a} - \sqrt{\left(\frac{W_t+b}{2a}\right)^2 - \frac{bW_t}{a}} \\
+              S_t &= Y_te^{-PET_t/b} \\
+              ET_t &= Y_t\left(1-e^{-PET_t/b}\right) \\
+              DR_t &= (1-c)*(W_t - Y_t) \\
+              GR_t &= c*(W_t - Y_t) 
+              \end{array}$$
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -95,27 +114,75 @@
     <div class="col-md-9 col-lg-4">
       <div id="chart-gw"></div>
     </div>
-    <div class="col-sm-9 col-md-12 col-lg-5">
-      <div class="tabbable">
-        <ul class="nav nav-tabs">
-          <li class="active"><a href="#tab-gw-variable" data-toggle="tab">Variables</a></li>
-          <li><a href="#tab-gw-eqn" data-toggle="tab">Equations</a></li>
+  </div>
+  <div class="panel-group" id="eqn-gw">
+    <div class="panel">
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#eqn-gw" href="#collapseGW">
+            Show Equations <span class="caret"></span>
+          </a>
+        </h4>
+      </div>
+      <div id="collapseGW" class="panel-collapse collapse">
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-4">
+              $$\begin{array}\\
+                G_t &= \text{Groundwater Storage} \\
+                GR_t &= \text{Groundwater Recharge} \\
+                GD_t &= \text{Groundwater Discharge}
+              \end{array}$$
+            </div>
+            <div class="col-md-4">
+              $$\begin{array} \\
+                G_t + GD_t &= G_{t-1} + GR_t \\
+                G_t &= \frac{1}{1+d} (G_{t-1} + GR_t)\\
+                GD_t &= d G_t
+              \end{array}$$
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <div>
+    <div class="row">
+      <div class="col-md-12">
+        <h3>References</h3>
+        <ul>
+          <li><a href="http://pubs.er.usgs.gov/publication/70046351">Thomas, H. A. (1981)</a>. Improved Methods for National Water Assessment. Report, Contract: WR15249270. Washington, D.C.: US Water Resource Council.</li>
+          <li>Shuttleworth, W. J. (1993). Chapter 4: Evaporation. In D. R. Maidment (Ed.), Handbook of Hydrology (pp. 4.1-4.53). New York: McGraw-Hill, Inc.</li>
         </ul>
-        <div class="tab-content">
-          <div class="tab-pane active" id="tab-gw-variable">
-            $$\begin{array}\\
-              G_t &= \text{Groundwater Storage} \\
-              GR_t &= \text{Groundwater Recharge from Soil} \\
-              GD_t &= \text{Groundwater Discharge to Streamflow}
-            \end{array}$$
-          </div>
-          <div class="tab-pane" id="tab-gw-eqn">
-            $$\begin{array} \\
-            G_t + GD_t &= G_{t-1} + GR_t \\
-            G_t &= \frac{G_{t-1} + GR_t}{1+d} \\
-            GD_t &= dG_t
-            \end{array}$$
-          </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" role="dialog" id="modal-pet">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h3>Potential Evapotranspiration</h3>
+        </div>
+        <div class="modal-body">
+          <p>Potential evapotranspiration is estimated from observed air temperature and latitude using the method described by Shuttleworth (1993).</p>
+          $$PET = 0.0023 S_0 (T_{max}-T_{min})(\bar{T}+17.8)$$
+          <p>where \(PET\) is daily potential evapotranspiration (in/day), \(S_0\) is the water equivalent of extraterrestrial solar radiation (in/day), \(T_{min}\) and \(T_{max}\) are the daily minimum and maximum air temperature (degC), and \(\bar{T}\) is the average daily temperature computed as the mean of \(T_{min}\) and \(T_{max}\).</p>
+          <p>The extraterrestrial solar radiation depends on the time of year and latitude:</p>
+          $$S_0 = 0.6059 d_r (\omega_s \sin{\phi} \sin{\delta} + \cos{\phi} \cos{\delta} \sin{\omega_s})$$
+          <p>where \(d_r\) is the relative distance between the earth and sun, \(\omega_s\) is the sunset hour angle (radians), \(\phi\) is the latitude (radians), and \(\delta\) is the solar declination (radians). These are computed by:</p>
+          $$\begin{array} \\
+            d_r &= 1 + 0.033 \cos{ \left( \frac{2\pi}{365}J \right) } \\
+            \delta &= 0.4093 \sin{ \left( \frac{2\pi}{365}J - 1.405 \right) } \\
+            \omega_s &= \cos{ \left( -\tan{\phi}\tan{\delta} \right) }
+          \end{array}$$
+          <p>where \(J\) is the Julian day (number of days since January 1 of a given year).</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#" class="btn btn-primary" data-dismiss="modal">Close</a>
         </div>
       </div>
     </div>

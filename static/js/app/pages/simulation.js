@@ -109,7 +109,6 @@ define([
       }
     },
 
-
     initSliders: function() {
       var that = this;
       this.updateSliders();

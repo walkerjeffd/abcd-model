@@ -8,7 +8,7 @@ define([
   var Diagram = Backbone.View.extend({
     svg: ['<svg xmlns="http://www.w3.org/2000/svg" width="323px" height="307px" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1">',
           '  <defs/>',
-          '  <g transform="translate(0.5,0.5)scale(0.8,0.8)">',
+          '  <g transform="translate(0.5,0.5)">',
           '    <g transform="translate(10,105)">',
           '        <rect x="0" y="0" width="120" height="60" fill="#ffffff" stroke="#000000" pointer-events="none" id="comp-S" class="component"/>',
           '        <text x="58" y="35" fill="white" text-anchor="middle" font-size="12px" font-family="Helvetica">Soil Moisture</text>',

@@ -895,7 +895,7 @@ define([
   };
 
   var ComponentChart = function() {
-    var margin = {top: 25, bottom: 45, left: 30, right: 80},
+    var margin = {top: 25, bottom: 45, left: 30, right: 100},
         width = 300,
         height = 200,
         xScale = d3.scale.linear(),

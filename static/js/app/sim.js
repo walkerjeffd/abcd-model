@@ -26,7 +26,6 @@ define([
       return Trng_degC > 0 ? 0.0023*Solar_in*(Tavg_degC+17.8)*Math.sqrt(Trng_degC) : 0;
     };
 
-
     // public function
     var setInput = function(input, latitude) {
       console.log('SimModel: set input');

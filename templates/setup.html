@@ -63,8 +63,8 @@
           <h3>Load Existing Model</h3>
         </div>
         <div class="modal-body">
+          <p>If you have a model configuration file in JSON format (created from the Export page), you can load it by dropping the file on the area below.</p>
           <div class="text-center">
-            <h4>Load Existing Model</h4>
             <div class="dropzone" id="holder-load">
               <div style="padding-top: 40px; z-index: -1;">Drop JSON File Here</div>
             </div>
@@ -107,10 +107,11 @@
           <li><strong>Flow_in</strong>: Streamfow (inches/day)</li>
         </ul>
         <p><i>Example File Format</i>:</p>
-        <img src="{{ url_for('static', filename='media/input_file_example.png') }}" alt="Example input file">
+        <img src="{{ url_for('static', filename='img/input_file_example.png') }}" alt="Example input file">
         <h4>Need an Input File?</h4>
-        <p>Here is an example input file for the <a href="http://waterdata.usgs.gov/usa/nwis/uv?01102500">Aberjona River</a> (MA): <a href="{{ url_for('static', filename='media/aberjona.csv') }}" download="aberjona.csv">aberjona.csv</a></p>
+        <p>Here is an example input file for the <a href="http://waterdata.usgs.gov/usa/nwis/uv?01102500">Aberjona River</a> (MA): <a href="{{ url_for('static', filename='data/aberjona.csv') }}" download="aberjona.csv">aberjona.csv</a></p>
         <p><i>Note</i>: If you are using Internet Explorer, you may need to change the file extension from ".xls" to ".csv"</p>
+        <p>Data for other watersheds can be obtained from <a href="http://waterdata.usgs.gov/nwis">USGS National Water Information System</a> and <a href="http://www.ncdc.noaa.gov/cdo-web/">NCDC Climate Data Online</a>.</p>
         <h4>Beware!</h4>
         <p>If you are using Excel, make sure the date format is set correctly. The default "mm/dd/yyyy" format cannot be used. To specify the correct date format, select the column of dates and set the cell format to "Custom" with type "yyyy-mm-dd", then save the file as CSV.</p>
       </div>

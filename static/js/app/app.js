@@ -18,7 +18,7 @@ define([
       if (page != "theory") {
         appModel.fetch({
           error: function(model, response, options) {
-            model.save();
+            model.save({}, {validate:false});
           }
         });
       }

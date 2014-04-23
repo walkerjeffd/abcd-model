@@ -1,15 +1,7 @@
 *.py[cod]
 *.sublime*
-*.dmp
-
-*.png
-*.jpg
-*.jpeg
 
 build
-boilerplate/
-fonts/
-app-build/
-nw/
+boilerplate
 
 r.js

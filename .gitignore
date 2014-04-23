@@ -5,3 +5,4 @@ build
 boilerplate
 
 r.js
+passenger_wsgi.py

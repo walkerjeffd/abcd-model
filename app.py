@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.config.from_object(__name__)
 
 # create freezer
-freezer = Freezer(app)
+freezer = Freezer(app, with_static_files=False)
 
 # add views
 @app.route('/')

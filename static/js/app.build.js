@@ -30,7 +30,7 @@
     },
     appDir: '../',
     baseUrl: 'js',
-    dir: '../../app-build',
+    dir: '../../build/static',
     modules: [
         {
             name: "main"

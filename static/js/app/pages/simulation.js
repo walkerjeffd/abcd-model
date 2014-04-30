@@ -28,23 +28,23 @@ define([
 
     initialize: function(options) {
       console.log('Initialize: SimulationPage');
-      
+
       this.dispatcher = options.dispatcher;
-      
+
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
-      
+
       this.soilChart = new SoilTheoryChart({
-        model: this.model, 
-        id: 'chart-soil', 
-        width: 270, 
+        model: this.model,
+        id: 'chart-soil',
+        width: 270,
         height: 200,
         yLabel: ' '
       });
 
       this.gwChart = new GWTheoryChart({
         model: this.model,
-        id: 'chart-gw', 
-        width: 270, 
+        id: 'chart-gw',
+        width: 270,
         height: 200,
         yLabel: ' '
       });
@@ -81,17 +81,17 @@ define([
       this.$("#select-add-chart").children(":selected").each(function(i, option) {
         variables.push(option.value);
       });
-      
+
       if (variables.length > 0) {
         this.addChart(variables);
       }
     },
 
-    focusTheory: function(x) {      
+    focusTheory: function(x) {
       if (x !== undefined) {
         var input = this.model.get('input');
         var i = 0, len = input.length;
-        
+
         // this.simModel.run(this.model);
 
         for (; i < (len-1); i++) {
@@ -112,7 +112,7 @@ define([
     initSliders: function() {
       var that = this;
       this.updateSliders();
-      $(".slider").change(function() {
+      $(".slider").on('input change', function() {
         // console.log('change: ', this.name);
         that.$("#param-"+this.name).text(this.value);
         that.model.set(this.name, +this.value);
@@ -182,8 +182,8 @@ define([
     addChart: function(variables) {
       console.log("Add Chart", variables);
       var newChart = new ChartView({
-        model: this.model, 
-        variables: variables, 
+        model: this.model,
+        variables: variables,
         dispatcher: this.dispatcher
       });
       newChart.render().zoom(this.translate, this.scale);
@@ -195,7 +195,7 @@ define([
     initCharts: function() {
       console.log('Init charts');
       var that = this;
-      
+
       this.chartFlow = new Charts.ZoomableTimeseriesLineChart()
         .id(this.cid)
         .x(function(d) { return d.Date; })

@@ -9,7 +9,7 @@ define([
   'app/views/controls'
 ], function ($, _, Backbone, d3, Charts, Utils, SimModel, ControlsView) {
   'use strict';
-  
+
   var OptimizationPage = Backbone.View.extend({
     charts: {},
 
@@ -24,7 +24,7 @@ define([
 
     initialize: function(options) {
       console.log('Initialize: OptimizationPage');
-      
+
       this.dispatcher = options.dispatcher;
 
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
@@ -41,7 +41,7 @@ define([
 
       this.initSliders();
       this.initCharts();
-      
+
       this.listenTo(this.model, 'change:input', this.setInput);
       this.listenTo(this.model, 'change', this.updateSliders);
       this.listenTo(this.model, 'change', this.render);
@@ -101,13 +101,13 @@ define([
         this.isRunning = false;
         clearInterval(this.loopId);
         this.loopId = null;
-        
+
         if (!this.isRunning) {
           if (!this.model.isNew() && this.model.hasChanged()) {
             this.dispatcher.trigger('status', 'Unsaved changes...');
           } else {
             this.dispatcher.trigger('status', 'Ready!');
-          }  
+          }
         }
       }
     },
@@ -122,9 +122,9 @@ define([
     toggleTracker: function() {
       // console.log('toggle tracker');
       var that = this;
-      
+
       this.tracking = !this.tracking;
-      
+
       d3.select("#btn-track").classed("btn-success", this.tracking).classed("btn-danger", !this.tracking);
       d3.select("#btn-track").text(function() {
         if (that.tracking) {
@@ -136,9 +136,9 @@ define([
     },
 
     initSliders: function() {
-      var that = this;     
+      var that = this;
       this.updateSliders();
-      this.$(".slider").change(function() {
+      this.$(".slider").on('input change', function() {
         that.$("#param-"+this.name).text(this.value);
         that.model.set(this.name, +this.value);
       });
@@ -186,7 +186,7 @@ define([
             // if this is the only run so far
             // or if current rmse is less than existing optimal rmse
 
-            // update optimal index 
+            // update optimal index
             this.bestSimIndex = this.history.length-1;
 
             // update optimal parameter set
@@ -215,7 +215,7 @@ define([
           // toggle loadingExisting if it is on
           this.loadingExisting = false;
         }
-        
+
         d3.select("#chart-a").call(this.charts.A
           .data(this.history)
           .optimal([this.bestParams])
@@ -246,7 +246,7 @@ define([
           this.dispatcher.trigger('status', 'Unsaved changes...');
         } else {
           this.dispatcher.trigger('status', 'Ready!');
-        }  
+        }
       }
     },
 
@@ -260,7 +260,7 @@ define([
       //   return (i === this.tracker.optimal) ? 'red' : 'black';
       // }
       var that = this;
-      
+
       var circleClick = function(d, i) {
         that.loadSimulation(_.omit(d, 'rmse'));
       };

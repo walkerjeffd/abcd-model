@@ -40,7 +40,7 @@ define([
     
     initSliders: function() {
       var that = this;
-      this.$(".slider").change(function() {
+      this.$(".slider").on('input change', function() {
         that.$("#param-"+this.name).text(this.value);
         that.model.set(this.name, +this.value);
       });

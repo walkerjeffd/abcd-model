@@ -11,29 +11,29 @@ define([
   'app/views/controls'
 ], function ($, _, Backbone, d3, Charts, Utils, SimModel, SoilTheoryChart, GWTheoryChart, ControlsView) {
   'use strict';
-  
+
   var CalibrationPage = Backbone.View.extend({
     charts: {},
 
     initialize: function(options) {
       console.log('Initialize: CalibrationPage');
-      
+
       this.dispatcher = options.dispatcher;
 
       this.controlsView = new ControlsView({model: this.model, el: this.$('#controls'), dispatcher: this.dispatcher});
 
       this.soilChart = new SoilTheoryChart({
-        model: this.model, 
-        id: 'chart-soil', 
-        width: 270, 
+        model: this.model,
+        id: 'chart-soil',
+        width: 270,
         height: 200,
         yLabel: ' '
       });
 
       this.gwChart = new GWTheoryChart({
         model: this.model,
-        id: 'chart-gw', 
-        width: 270, 
+        id: 'chart-gw',
+        width: 270,
         height: 200,
         yLabel: ' '
       });
@@ -48,7 +48,7 @@ define([
       this.listenTo(this.model, 'change', this.updateSliders);
 
       this.dispatcher.on('focus', this.focusTheory.bind(this));
-      
+
       this.dispatcher.trigger('status', 'Ready!');
     },
 
@@ -60,7 +60,7 @@ define([
       if (x !== undefined) {
         var input = this.model.get('input');
         var i = 0, len = input.length;
-        
+
         // find date of current mouse position
         for (; i < (len-1); i++) {
           if (input[i+1].Date > x) {
@@ -81,7 +81,7 @@ define([
     initSliders: function() {
       var that = this;
       this.updateSliders();
-      this.$(".slider").change(function() {
+      this.$(".slider").on('input change', function() {
         that.$("#param-"+this.name).text(this.value);
         that.model.set(this.name, +this.value);
       });
@@ -99,9 +99,9 @@ define([
       var numberFormat = d3.format("4.4f");
       if (this.model.get('input') && this.model.get('input').length > 0 && _.without(d3.keys(this.model.changedAttributes()), 'PET').length > 0) {
         this.simModel.run(this.model);
-        
+
         var stats = Utils.statsGOF(this.simModel.output, 'obsQ', 'Q');
-        
+
         d3.select("#chart-line").call(this.charts.Line.data(this.simModel.output));
         d3.select("#chart-scatter").call(this.charts.Scatter.data(this.simModel.output));
         d3.select("#chart-cdf").call(this.charts.CDF.data(this.simModel.output));
@@ -153,7 +153,7 @@ define([
         .yScale(d3.scale.log())
         .yDomain([0.001, 2])
         .yVariables(['obsQ', 'Q'])
-        // .yVariableLabels(this.model.variableLabels)        
+        // .yVariableLabels(this.model.variableLabels)
         .color(this.model.colors)
         .yLabel('Flow (in/d)')
         .xLabel('Cumulative Frequency');

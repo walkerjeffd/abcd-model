@@ -1,15 +1,15 @@
 Web-based Interactive Watershed Model (WIWM)
 ============================================
 
-Demonstrates a stand-alone client-side web application for interactive environmental modeling. Implements the abcd water balance model for simple watershed hydrology.
+This repo contains a client-side web application designed for interactive environmental modeling. The application is based the abcd water balance model for simple watershed hydrology.
 
-Uses LocalStorage to maintain application state across pages and between browser sessions. Uses File API and HTML5 to load and save input/output data as text files.
+The application uses LocalStorage to maintain application state across pages and between browser sessions. It also uses the File API and HTML5 to load and save input/output data as text files.
 
-The application is developed using Flask, but can be converted to a collection of static HTML/CSS/JavaScript files using [Frozen-Flask](https://pythonhosted.org/Frozen-Flask/).
+The application is developed using Flask, and can be converted to a collection of static HTML/CSS/JavaScript files using [Frozen-Flask](https://pythonhosted.org/Frozen-Flask/).
 
-Part of a PhD research project by [Jeffrey D. Walker](http://walkerjeff.com), Tufts University
+This is part of a PhD dissertation by [Jeffrey D. Walker](http://walkerenvres.com), Tufts University
 
-See [phd.walkerjeff.com](phd.walkerjeff.com) for more information about this research.
+See [phd.walkerenvres.com](phd.walkerenvres.com) for more information about this research.
 
 Overview
 --------
@@ -23,22 +23,37 @@ The code is organized as follows:
 Installation
 ------------
 
-Set up a new virtual environment using [virtualenv](https://pypi.python.org/pypi/virtualenv), and then activate it.
+Set up a new virtual environment using [virtualenv](https://pypi.python.org/pypi/virtualenv):
+
+```
+pip install virtualenv
+virtualenv venv
+```
+
+Activate the virtualenv:
+
+```
+source venv/bin/activate
+```
 
 Install dependencies.
 
-```shell
+```
 pip install -r requirements.txt
 ```
 
 You will also need node.js and the require.js optimization script [r.js](http://requirejs.org/docs/download.html#rjs) saved to the root of this directory.
+
+```
+wget http://requirejs.org/docs/release/2.1.22/r.js
+```
 
 Run Local Server
 ----------------
 
 To run the application using a local testing server, simply execute app.py
 
-```shell
+```
 python app.py
 ```
 
@@ -47,13 +62,13 @@ Build Static HTML Files
 
 To build a static version of the HTML files, run the build command
 
-```shell
+```
 python app.py build
 ```
 
 To check that the build worked, run a `SimpleHTTPServer` within the build directory
 
-```shell
+```
 cd ./build
 python -m SimpleHTTPServer
 ```
@@ -65,7 +80,7 @@ Build Front-end Code
 
 The front-end HTML/CSS/JS code can be optimized (minified, concatenated) using the require.js optimization script. The optimization configuraiton is located in `static/js/app.build.js`.
 
-```shell
+```
 node r.js -o static/js/app.build.js
 ```
 
@@ -76,12 +91,12 @@ Create Deployment
 
 A deployment involves first clearing out the `build` folder, then building the static HTML files from Flask, and finally creating the optimized front-end static files using node/require.js. These steps are included in the `makefile`. To run this, simply enter:
 
-```shell
+```
 make
 ```
 
 And to clear out a previous build, run:
 
-```shell
+```
 make clean
 ```

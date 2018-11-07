@@ -5,7 +5,7 @@
 
 {% block head %}
   {{ super() }}
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
   <script>
     MathJax.Hub.Config({
       jax: ["input/TeX","output/HTML-CSS"],
@@ -169,7 +169,7 @@
         </div>
         <div class="modal-body">
           <p>Potential evapotranspiration is estimated from observed air temperature and latitude using the method described by Shuttleworth (1993).</p>
-          $$PET = 0.0023 S_0 (T_{max}-T_{min})(\bar{T}+17.8)$$
+          $$PET = 0.0023 S_0 \sqrt{(T_{max}-T_{min})}(\bar{T}+17.8)$$
           <p>where \(PET\) is daily potential evapotranspiration (in/day), \(S_0\) is the water equivalent of extraterrestrial solar radiation (in/day), \(T_{min}\) and \(T_{max}\) are the daily minimum and maximum air temperature (degC), and \(\bar{T}\) is the average daily temperature computed as the mean of \(T_{min}\) and \(T_{max}\).</p>
           <p>The extraterrestrial solar radiation depends on the time of year and latitude:</p>
           $$S_0 = 0.6059 d_r (\omega_s \sin{\phi} \sin{\delta} + \cos{\phi} \cos{\delta} \sin{\omega_s})$$
@@ -177,7 +177,7 @@
           $$\begin{array} \\
             d_r &= 1 + 0.033 \cos{ \left( \frac{2\pi}{365}J \right) } \\
             \delta &= 0.4093 \sin{ \left( \frac{2\pi}{365}J - 1.405 \right) } \\
-            \omega_s &= \cos{ \left( -\tan{\phi}\tan{\delta} \right) }
+            \omega_s &= \arccos{ \left( -\tan{\phi}\tan{\delta} \right) }
           \end{array}$$
           <p>where \(J\) is the Julian day (number of days since January 1 of a given year).</p>
         </div>
